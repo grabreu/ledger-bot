@@ -46,7 +46,14 @@ Future-you revisiting this months later, or someone browsing the portfolio to se
 
 .NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; the bot is the host (webhook, inbox, background worker). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
 
-TODO: project layout, once the solution is scaffolded.
+Layout (one project per module, plus a `*.Contracts` project each; not scaffolded yet):
+
+- `src/LedgerBot.Bot`: host (webhook, inbox, worker, pending confirmations, GraphQL). Channels live inside it: `Channels/` holds the channel interface and shared types, `Channels/Telegram/` the first adapter. Bot flow code uses only the interface, never Telegram types. A new channel is a new folder, moved to its own project only if it grows.
+- `src/LedgerBot.Households` (User, Household, Membership, Invite)
+- `src/LedgerBot.Ledger` (Category, LedgerEntry)
+- `src/LedgerBot.Llm` (provider abstraction, read-only tools, LlmCall)
+- `src/LedgerBot.Reminders` (Reminder; v1.1)
+- `tests/LedgerBot.*.Tests`
 
 Rules that hold regardless of layout:
 
