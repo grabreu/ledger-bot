@@ -1,0 +1,72 @@
+# ledger-bot
+
+## Repository
+
+A household expense tracker driven by a Telegram bot and an LLM. Messages in natural language (PT-BR) become ledger entries; questions are answered from the household's own data. Backend only by design: no frontend, the bot is the interface and a GraphQL API (HotChocolate) sits underneath it. The LLM never writes data: it calls read-only typed tools or returns an interpreted entry that code validates and saves.
+
+Read `README.md` before making changes: it documents the project pitch and how to run it. Significant, hard-to-reverse decisions are recorded in `docs/adr/`: check it before revisiting one, and add an entry when making a new one. The design draft (domain model, technical decisions, Telegram research) lives in the private `rascunho` repository under `ideas/ledger-bot/`.
+
+## General Rules
+
+- Keep changes scoped to the requested change.
+- Prefer existing patterns over introducing new abstractions.
+- Do not add dependencies unless they are necessary.
+- Do not fill gaps with assumptions when the user hasn't given the information: ask, or mark it as pending.
+- Do not claim a validation command passed unless it was actually run.
+- Code, comments, commit messages, and documentation are always written in English.
+- Do not use em dashes; use a comma, colon, semicolon, parentheses, or a separate sentence instead.
+
+## Git
+
+- Do not create or switch branches unless explicitly requested.
+- Do not create commits unless explicitly requested.
+- Do not push unless explicitly requested.
+- Keep commits focused on the requested change.
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/) (`type: summary`).
+
+## Documentation
+
+### Audience
+
+Future-you revisiting this months later, or someone browsing the portfolio to see how it works. Not onboarding material; keep it concise and skimmable.
+
+### Content Rules
+
+- State facts concisely. Avoid unnecessary explanations or trailing rationale.
+- Do not document information that is already obvious from the repository structure or configuration.
+- Do not invent features, API shapes, or future direction: mark undecided things as TODO.
+- Document a capability only after it is implemented and verified.
+- Use proper Markdown headings (`##`, `###`), not bold text as headings.
+
+---
+
+## Project-Specific Guidelines
+
+### Source
+
+.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; the bot is the host (webhook, inbox, background worker). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
+
+TODO: project layout, once the solution is scaffolded.
+
+Rules that hold regardless of layout:
+
+- The LLM never writes. It calls read-only typed tools, or returns an interpreted entry that code validates (amount, category, date) and saves. Undo and delete come from buttons, never from model output.
+- Entries are saved directly with an Undo button; confirmation is required first when the amount is missing, the category does not exist yet, or the date is not today (a deterministic rule, not a model-reported confidence).
+- Telegram updates are written to an inbox table by `update_id` before answering 200 and processed by a background worker; pending confirmations live in the database. Validate `X-Telegram-Bot-Api-Secret-Token` on every request.
+- Use `Ledger` and `LedgerEntry` for the domain, never "Transaction" (it collides with database transactions).
+- Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
+- The bot talks to the domain through a channel interface so another channel (WhatsApp) can be added; a user is identified by channel plus the channel's own user id.
+- Never log message content; LLM calls record model, prompt version, tokens, estimated cost, latency, and outcome only.
+- Secrets (bot token, webhook secret, LLM key) come from configuration, never from code.
+
+### Validation
+
+TODO: commands, once the solution exists. Expected: restore, build, `dotnet format --verify-no-changes`, and tests, matching CI.
+
+### Open Questions
+
+- TODO: retention of the original message stored with each entry (personal data).
+- TODO: confirm in the official Gemini API terms that enabling billing excludes the data from product improvement.
+- TODO: cost of `minReplicas=1` against the `azure-infra` monthly budget.
+- TODO: local orchestration with .NET Aspire.
+- TODO: how an invite code travels on WhatsApp, if that channel is added.
