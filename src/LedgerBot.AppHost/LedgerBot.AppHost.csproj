@@ -1,0 +1,12 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.6.5">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LedgerBot.Bot\LedgerBot.Bot.csproj" />
+  </ItemGroup>
+
+</Project>

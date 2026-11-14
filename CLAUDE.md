@@ -46,8 +46,10 @@ Future-you revisiting this months later, or someone browsing the portfolio to se
 
 .NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; the bot is the host (webhook, inbox, background worker). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
 
-Layout (one project per module, plus a `*.Contracts` project each; not scaffolded yet):
+Layout (one project per module, plus a `*.Contracts` project each; only the host projects exist so far, modules are added with their first slice):
 
+- `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
+- `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
 - `src/LedgerBot.Bot`: host (webhook, inbox, worker, pending confirmations, GraphQL). Channels live inside it: `Channels/` holds the channel interface and shared types, `Channels/Telegram/` the first adapter. Bot flow code uses only the interface, never Telegram types. A new channel is a new folder, moved to its own project only if it grows.
 - `src/LedgerBot.Households` (User, Household, Membership, Invite)
 - `src/LedgerBot.Ledger` (Category, LedgerEntry)
@@ -68,12 +70,28 @@ Rules that hold regardless of layout:
 
 ### Validation
 
-TODO: commands, once the solution exists. Expected: restore, build, `dotnet format --verify-no-changes`, and tests, matching CI.
+Matches CI (`.github/workflows/ci.yml`):
+
+```bash
+dotnet restore
+dotnet format --no-restore --verify-no-changes --severity info
+dotnet build --no-restore --configuration Release
+dotnet test --no-build --configuration Release
+```
+
+### Tests
+
+xunit v3, run through Microsoft.Testing.Platform (`global.json`). Three layers; do not repeat the same rule in more than one:
+
+- Unit: only where needed (domain rules). Named `Method_ShouldX_WhenY`.
+- Functional: dispatch a command or query of a module and assert the result. One test project per module, with `Unit/` and `Functional/` folders. TODO: database for these tests (SQL Server container vs. alternatives).
+- Acceptance: conversation flows through the bot, only in `LedgerBot.Bot.Tests`, with a fake channel and a fake LLM provider. TODO: Reqnroll (Gherkin) to be confirmed once the first flows exist.
+
+Infrastructure smoke tests (for example `/health`) stay as plain xunit tests.
 
 ### Open Questions
 
 - TODO: retention of the original message stored with each entry (personal data).
 - TODO: confirm in the official Gemini API terms that enabling billing excludes the data from product improvement.
 - TODO: cost of `minReplicas=1` against the `azure-infra` monthly budget.
-- TODO: local orchestration with .NET Aspire.
 - TODO: how an invite code travels on WhatsApp, if that channel is added.
