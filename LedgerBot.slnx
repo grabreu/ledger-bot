@@ -1,4 +1,10 @@
 <Solution>
+  <Folder Name="/_Host/">
+    <Project Path="src/LedgerBot.AppHost/LedgerBot.AppHost.csproj" />
+    <Project Path="src/LedgerBot.Bot/LedgerBot.Bot.csproj" />
+    <Project Path="src/LedgerBot.ServiceDefaults/LedgerBot.ServiceDefaults.csproj" />
+    <Project Path="tests/LedgerBot.Bot.Tests/LedgerBot.Bot.Tests.csproj" />
+  </Folder>
   <Folder Name="/__Solution Items/">
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
