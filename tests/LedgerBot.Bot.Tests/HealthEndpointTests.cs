@@ -1,9 +1,8 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace LedgerBot.Bot.Tests;
 
-public class HealthEndpointTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
+public class HealthEndpointTests(BotApplicationFactory factory) : IClassFixture<BotApplicationFactory>
 {
     [Fact]
     public async Task Health_ShouldReturnOk()
