@@ -1,3 +1,5 @@
+using LedgerBot.Bot.Channels;
+using LedgerBot.Bot.Channels.Telegram;
 using LedgerBot.ServiceDefaults;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -25,6 +27,10 @@ builder.Services.AddOpenApi(options =>
         return Task.CompletedTask;
     });
 });
+
+builder.AddTelegramChannel();
+
+builder.Services.AddScoped<IIncomingMessageHandler, EchoMessageHandler>();
 
 var app = builder.Build();
 
