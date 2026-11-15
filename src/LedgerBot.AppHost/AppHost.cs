@@ -1,6 +1,9 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.LedgerBot_Bot>("bot");
+var telegramBotToken = builder.AddParameter("telegram-bot-token", secret: true);
+
+builder.AddProject<Projects.LedgerBot_Bot>("bot")
+    .WithEnvironment("Telegram__BotToken", telegramBotToken);
 
 var app = builder.Build();
 
