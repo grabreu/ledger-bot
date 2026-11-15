@@ -10,13 +10,33 @@ public static class TelegramChannelExtensions
         builder.Services.AddOptions<TelegramOptions>()
             .BindConfiguration(TelegramOptions.SectionName)
             .Validate(options => !string.IsNullOrWhiteSpace(options.BotToken), "Telegram:BotToken is required.")
+            .Validate(
+                options => options.Mode != TelegramMode.Webhook || !string.IsNullOrWhiteSpace(options.WebhookUrl),
+                "Telegram:WebhookUrl is required in Webhook mode.")
+            .Validate(
+                options => options.Mode != TelegramMode.Webhook || IsValidSecret(options.WebhookSecret),
+                "Telegram:WebhookSecret must be 1 to 256 characters of letters, digits, '_' or '-' in Webhook mode.")
             .ValidateOnStart();
 
         builder.Services.AddSingleton(sp => new TelegramBotClient(sp.GetRequiredService<IOptions<TelegramOptions>>().Value.BotToken));
         builder.Services.AddSingleton<ITelegramBotClient>(sp => sp.GetRequiredService<TelegramBotClient>());
         builder.Services.AddSingleton<IChannelClient, TelegramChannelClient>();
-        builder.Services.AddHostedService<TelegramPollingService>();
+
+        var mode = builder.Configuration.GetValue<TelegramMode>($"{TelegramOptions.SectionName}:Mode");
+        if (mode == TelegramMode.Webhook)
+        {
+            builder.Services.AddHostedService<TelegramWebhookRegistrationService>();
+        }
+        else
+        {
+            builder.Services.AddHostedService<TelegramPollingService>();
+        }
 
         return builder;
+    }
+
+    private static bool IsValidSecret(string secret)
+    {
+        return secret.Length is >= 1 and <= 256 && secret.All(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '-');
     }
 }

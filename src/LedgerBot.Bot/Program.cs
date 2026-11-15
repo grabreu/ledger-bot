@@ -36,6 +36,8 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+app.MapTelegramWebhook();
+
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.Map("/", () => Results.Redirect("/scalar"));
