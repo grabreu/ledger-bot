@@ -5,6 +5,11 @@
     <Project Path="src/LedgerBot.ServiceDefaults/LedgerBot.ServiceDefaults.csproj" />
     <Project Path="tests/LedgerBot.Bot.Tests/LedgerBot.Bot.Tests.csproj" />
   </Folder>
+  <Folder Name="/Llm/">
+    <Project Path="src/LedgerBot.Llm.Contracts/LedgerBot.Llm.Contracts.csproj" />
+    <Project Path="src/LedgerBot.Llm/LedgerBot.Llm.csproj" />
+    <Project Path="tests/LedgerBot.Llm.Tests/LedgerBot.Llm.Tests.csproj" />
+  </Folder>
   <Folder Name="/__Solution Items/">
     <File Path=".editorconfig" />
     <File Path="Directory.Build.props" />
