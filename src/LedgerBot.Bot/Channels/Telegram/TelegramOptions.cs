@@ -4,8 +4,6 @@ public sealed class TelegramOptions
 {
     public const string SectionName = "Telegram";
 
-    public TelegramMode Mode { get; set; } = TelegramMode.Polling;
-
     public string BotToken { get; set; } = "";
 
     public string WebhookUrl { get; set; } = "";
