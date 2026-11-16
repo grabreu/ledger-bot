@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.DevTunnels" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LedgerBot.Bot\LedgerBot.Bot.csproj" />
   </ItemGroup>
 
