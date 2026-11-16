@@ -6,11 +6,19 @@ A household expense tracker driven by a chat bot (Telegram first) and an LLM tha
 
 _Backend only, on purpose: there is no dashboard. The bot is the interface and a GraphQL API sits underneath it._
 
-> Status: in planning. Nothing below is implemented yet.
+> Status: early development. Entries are not saved from the bot yet.
 
 ## Tech stack
 
-Planned: .NET (ASP.NET Core), modular monolith with Vertical Slice Architecture · EF Core + SQL Server · HotChocolate (GraphQL) · Telegram Bot API · Gemini API behind a provider abstraction · OpenTelemetry · Azure Container Apps
+In use: .NET (ASP.NET Core), modular monolith with Vertical Slice Architecture · EF Core + SQL Server · Telegram Bot API (webhook) · .NET Aspire (local development) · OpenTelemetry
+
+Planned: HotChocolate (GraphQL) · Gemini API behind a provider abstraction · Azure Container Apps
+
+## Implemented
+
+- Telegram webhook with secret token validation.
+- Message interpretation behind an LLM provider abstraction, with a fake provider; the bot replies with the interpreted entry.
+- `Ledger` module with the `LedgerEntry` schema and EF Core migrations (not yet wired to the bot).
 
 ## Planned features
 
@@ -23,7 +31,19 @@ The reasoning behind these decisions will live in `docs/adr/`.
 
 ## Development
 
-TODO: filled in when the project is scaffolded.
+```bash
+dotnet restore
+dotnet build --configuration Release
+dotnet test --configuration Release
+```
+
+Run locally through the AppHost (needs Docker, a Telegram bot token, and a Dev Tunnel for the webhook):
+
+```bash
+dotnet run --project src/LedgerBot.AppHost
+```
+
+The AppHost asks for the `telegram-bot-token` parameter and starts SQL Server, the API and the tunnel.
 
 ## Deployment
 

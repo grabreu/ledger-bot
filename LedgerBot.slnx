@@ -1,14 +1,21 @@
 <Solution>
-  <Folder Name="/_Host/">
-    <Project Path="src/LedgerBot.AppHost/LedgerBot.AppHost.csproj" />
+  <Folder Name="/Bot Module/">
     <Project Path="src/LedgerBot.Bot/LedgerBot.Bot.csproj" />
-    <Project Path="src/LedgerBot.ServiceDefaults/LedgerBot.ServiceDefaults.csproj" />
     <Project Path="tests/LedgerBot.Bot.Tests/LedgerBot.Bot.Tests.csproj" />
   </Folder>
-  <Folder Name="/Llm/">
-    <Project Path="src/LedgerBot.Llm.Contracts/LedgerBot.Llm.Contracts.csproj" />
-    <Project Path="src/LedgerBot.Llm/LedgerBot.Llm.csproj" />
-    <Project Path="tests/LedgerBot.Llm.Tests/LedgerBot.Llm.Tests.csproj" />
+  <Folder Name="/LLM Module/">
+    <Project Path="src/LedgerBot.Llm.Contracts/LedgerBot.Llm.Contracts.csproj" Id="3408ac78-336e-4604-97cd-b6f22c8d7caa" />
+    <Project Path="src/LedgerBot.Llm/LedgerBot.Llm.csproj" Id="8d33f6fd-0399-4c02-ba6e-ccb789392d76" />
+    <Project Path="tests/LedgerBot.Llm.Tests/LedgerBot.Llm.Tests.csproj" Id="1217abae-f2f2-4bf0-b825-efd5f4da2d54" />
+  </Folder>
+  <Folder Name="/_Host/">
+    <Project Path="src/LedgerBot.Api/LedgerBot.Api.csproj" />
+    <Project Path="src/LedgerBot.AppHost/LedgerBot.AppHost.csproj" />
+    <Project Path="src/LedgerBot.ServiceDefaults/LedgerBot.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Ledger Module/">
+    <Project Path="src/LedgerBot.Ledger/LedgerBot.Ledger.csproj" Id="26de7393-ab2a-4736-a56b-26037c6a70ea" />
+    <Project Path="tests/LedgerBot.Ledger.Tests/LedgerBot.Ledger.Tests.csproj" Id="1d8a0f95-80fd-4dbf-96b0-8f8bc3557fb7" />
   </Folder>
   <Folder Name="/__Solution Items/">
     <File Path=".editorconfig" />

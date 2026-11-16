@@ -8,15 +8,24 @@ var telegramWebhookSecret = builder.AddParameter(
     secret: true,
     persist: true);
 
-var bot = builder.AddProject<Projects.LedgerBot_Bot>("bot");
-var botHttps = bot.GetEndpoint("https");
+var sql = builder.AddSqlServer("sql")
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
 
-var tunnel = builder.AddDevTunnel("bot-tunnel")
-    .WithReference(botHttps, allowAnonymous: true);
+var db = sql.AddDatabase("ledgerbot");
 
-bot.WithEnvironment("Telegram__BotToken", telegramBotToken)
+var api = builder.AddProject<Projects.LedgerBot_Api>("api");
+
+var apiHttps = api.GetEndpoint("https");
+
+var tunnel = builder.AddDevTunnel("api-tunnel")
+    .WithReference(apiHttps, allowAnonymous: true);
+
+api.WithReference(db)
+    .WithEnvironment("Telegram__BotToken", telegramBotToken)
     .WithEnvironment("Telegram__WebhookSecret", telegramWebhookSecret)
-    .WithEnvironment("Telegram__WebhookUrl", tunnel.GetEndpoint(botHttps));
+    .WithEnvironment("Telegram__WebhookUrl", tunnel.GetEndpoint(apiHttps))
+    .WaitFor(db);
 
 var app = builder.Build();
 

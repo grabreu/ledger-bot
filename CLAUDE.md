@@ -4,7 +4,7 @@
 
 A household expense tracker driven by a Telegram bot and an LLM. Messages in natural language (PT-BR) become ledger entries; questions are answered from the household's own data. Backend only by design: no frontend, the bot is the interface and a GraphQL API (HotChocolate) sits underneath it. The LLM never writes data: it calls read-only typed tools or returns an interpreted entry that code validates and saves.
 
-Read `README.md` before making changes: it documents the project pitch and how to run it. Significant, hard-to-reverse decisions are recorded in `docs/adr/`: check it before revisiting one, and add an entry when making a new one. The design draft (domain model, technical decisions, Telegram research) lives in the private `rascunho` repository under `ideas/ledger-bot/`.
+Read `README.md` before making changes: it documents the project pitch and how to run it. Significant, hard-to-reverse decisions are recorded in `docs/adr/`: check it before revisiting one, and add an entry when making a new one. The design draft (domain model and technical decisions) lives in the private `rascunho` repository under `ideas/ledger-bot/`.
 
 ## General Rules
 
@@ -44,13 +44,14 @@ Future-you revisiting this months later, or someone browsing the portfolio to se
 
 ### Source
 
-.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; the bot is the host (webhook, GraphQL). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
+.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; `Api` is the host (Telegram webhook, GraphQL). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
 
-Layout (one project per module, plus a `*.Contracts` project each; only the host projects and `Llm` exist so far, modules are added with their first slice):
+Layout (one project per module, plus a `*.Contracts` project each; only the hosts, `Bot`, `Ledger` and `Llm` exist so far, modules are added with their first slice):
 
 - `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
 - `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
-- `src/LedgerBot.Bot`: host (webhook, pending confirmations, GraphQL). Channels live inside it: `Channels/` holds the channel interface and shared types, `Channels/Telegram/` the first adapter. Bot flow code uses only the interface, never Telegram types. A new channel is a new folder, moved to its own project only if it grows.
+- `src/LedgerBot.Api`: host and composition root only (Program, API docs, GraphQL).
+- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (settings, webhook endpoint with secret validation, webhook registration). Handlers use `ITelegramBotClient` directly.
 - `src/LedgerBot.Households` (User, Household, Membership, Invite)
 - `src/LedgerBot.Ledger` (Category, LedgerEntry)
 - `src/LedgerBot.Llm` (provider abstraction, read-only tools, LlmCall)
@@ -62,9 +63,9 @@ Rules that hold regardless of layout:
 - The LLM never writes. It calls read-only typed tools, or returns an interpreted entry that code validates (amount, category, date) and saves. Undo and delete come from buttons, never from model output.
 - Entries are saved directly with an Undo button; confirmation is required first when the amount is missing, the category does not exist yet, or the date is not today (a deterministic rule, not a model-reported confidence).
 - Telegram runs in webhook mode only (no polling); in development the AppHost exposes the bot through a Dev Tunnel. Updates are processed on the spot, in the request; pending confirmations live in the database. Validate `X-Telegram-Bot-Api-Secret-Token` on every request.
-- Use `Ledger` and `LedgerEntry` for the domain, never "Transaction" (it collides with database transactions).
+- Use `Ledger` and `LedgerEntry` (with `LedgerEntryKind`: `Income` | `Expense`) for the domain, never "Transaction" (it collides with database transactions).
 - Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
-- The bot talks to the domain through a channel interface so another channel (WhatsApp) can be added; a user is identified by channel plus the channel's own user id.
+- Telegram is the only channel, with no channel abstraction; a user is identified by the Telegram user id.
 - Never log message content; LLM calls record model, prompt version, tokens, estimated cost, latency, and outcome only.
 - Secrets (bot token, webhook secret, LLM key) come from configuration, never from code.
 
@@ -84,14 +85,13 @@ dotnet test --no-build --configuration Release
 xunit v3, run through Microsoft.Testing.Platform (`global.json`). Three layers; do not repeat the same rule in more than one:
 
 - Unit: only where needed (domain rules). Named `Method_ShouldX_WhenY`.
-- Functional: dispatch a command or query of a module and assert the result. One test project per module, with `Unit/` and `Functional/` folders. TODO: database for these tests (SQL Server container vs. alternatives).
-- Acceptance: conversation flows through the bot, only in `LedgerBot.Bot.Tests`, with a fake channel and a fake LLM provider. TODO: Reqnroll (Gherkin) to be confirmed once the first flows exist.
+- Functional: dispatch a command or query of a module and assert the result. One test project per module, with `Unit/` and `Functional/` folders. They run against a real SQL Server in a Testcontainers container.
+- Acceptance: conversation flows through the bot, only in `LedgerBot.Bot.Tests`, with the Telegram Bot API and the LLM provider faked. TODO: Reqnroll (Gherkin) to be confirmed once the first flows exist.
 
 Infrastructure smoke tests (for example `/health`) stay as plain xunit tests.
 
 ### Open Questions
 
 - TODO: dedup of Telegram updates by `update_id` (SQL table with id and status, no message content) before production. Until then updates are processed on the spot. The original message text is not stored with entries.
-- TODO: confirm in the official Gemini API terms that enabling billing excludes the data from product improvement.
-- TODO: cost of `minReplicas=1` against the `azure-infra` monthly budget.
-- TODO: how an invite code travels on WhatsApp, if that channel is added.
+- Gemini API with billing enabled on the project: the paid terms exclude prompts and responses from product improvement (Gemini API Additional Terms, effective 2026-03-23). Google still logs paid usage for an unspecified time for abuse monitoring, with no opt-out found. TODO: confirm that free-quota usage on a billed project counts as paid (inferred, not stated), and check that customer-side logs (on by default for projects created on or after 2026-10-26) are disabled.
+- Deploy starts with `minReplicas=0` (no compute cost within the free grants; `minReplicas=1` would be about USD 10 (roughly BRL 54) per month against a BRL 50 budget). Only safe after the `update_id` dedup, because a cold start may make Telegram resend an update. Keep at 0 unless the cold start gets in the way and the budget changes. TODO: check the "Environment Management Hour" meter in the first month's cost analysis.
