@@ -44,13 +44,13 @@ Future-you revisiting this months later, or someone browsing the portfolio to se
 
 ### Source
 
-.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; the bot is the host (webhook, inbox, background worker). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
+.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; the bot is the host (webhook, GraphQL). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
 
-Layout (one project per module, plus a `*.Contracts` project each; only the host projects exist so far, modules are added with their first slice):
+Layout (one project per module, plus a `*.Contracts` project each; only the host projects and `Llm` exist so far, modules are added with their first slice):
 
 - `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
 - `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
-- `src/LedgerBot.Bot`: host (webhook, inbox, worker, pending confirmations, GraphQL). Channels live inside it: `Channels/` holds the channel interface and shared types, `Channels/Telegram/` the first adapter. Bot flow code uses only the interface, never Telegram types. A new channel is a new folder, moved to its own project only if it grows.
+- `src/LedgerBot.Bot`: host (webhook, pending confirmations, GraphQL). Channels live inside it: `Channels/` holds the channel interface and shared types, `Channels/Telegram/` the first adapter. Bot flow code uses only the interface, never Telegram types. A new channel is a new folder, moved to its own project only if it grows.
 - `src/LedgerBot.Households` (User, Household, Membership, Invite)
 - `src/LedgerBot.Ledger` (Category, LedgerEntry)
 - `src/LedgerBot.Llm` (provider abstraction, read-only tools, LlmCall)
@@ -61,7 +61,7 @@ Rules that hold regardless of layout:
 
 - The LLM never writes. It calls read-only typed tools, or returns an interpreted entry that code validates (amount, category, date) and saves. Undo and delete come from buttons, never from model output.
 - Entries are saved directly with an Undo button; confirmation is required first when the amount is missing, the category does not exist yet, or the date is not today (a deterministic rule, not a model-reported confidence).
-- Telegram updates are written to an inbox table by `update_id` before answering 200 and processed by a background worker; pending confirmations live in the database. Validate `X-Telegram-Bot-Api-Secret-Token` on every request.
+- Telegram runs in webhook mode only (no polling); in development the AppHost exposes the bot through a Dev Tunnel. Updates are processed on the spot, in the request; pending confirmations live in the database. Validate `X-Telegram-Bot-Api-Secret-Token` on every request.
 - Use `Ledger` and `LedgerEntry` for the domain, never "Transaction" (it collides with database transactions).
 - Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
 - The bot talks to the domain through a channel interface so another channel (WhatsApp) can be added; a user is identified by channel plus the channel's own user id.
@@ -91,7 +91,7 @@ Infrastructure smoke tests (for example `/health`) stay as plain xunit tests.
 
 ### Open Questions
 
-- TODO: retention of the original message stored with each entry (personal data).
+- TODO: dedup of Telegram updates by `update_id` (SQL table with id and status, no message content) before production. Until then updates are processed on the spot. The original message text is not stored with entries.
 - TODO: confirm in the official Gemini API terms that enabling billing excludes the data from product improvement.
 - TODO: cost of `minReplicas=1` against the `azure-infra` monthly budget.
 - TODO: how an invite code travels on WhatsApp, if that channel is added.

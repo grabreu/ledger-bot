@@ -1,6 +1,7 @@
 using LedgerBot.Bot.Channels;
 using LedgerBot.Bot.Channels.Telegram;
 using LedgerBot.Bot.Conversation;
+using LedgerBot.Llm;
 using LedgerBot.ServiceDefaults;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -31,7 +32,9 @@ builder.Services.AddOpenApi(options =>
 
 builder.AddTelegramChannel();
 
-builder.Services.AddScoped<IIncomingMessageHandler, EchoMessageHandler>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddLlm();
+builder.Services.AddScoped<IIncomingMessageHandler, InterpretMessageHandler>();
 
 var app = builder.Build();
 

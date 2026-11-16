@@ -7,6 +7,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LedgerBot.Llm\LedgerBot.Llm.csproj" />
+    <ProjectReference Include="..\LedgerBot.Llm.Contracts\LedgerBot.Llm.Contracts.csproj" />
     <ProjectReference Include="..\LedgerBot.ServiceDefaults\LedgerBot.ServiceDefaults.csproj" />
   </ItemGroup>
 
