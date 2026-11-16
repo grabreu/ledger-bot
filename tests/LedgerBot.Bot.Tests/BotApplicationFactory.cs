@@ -1,4 +1,4 @@
-using LedgerBot.Bot.Channels.Telegram;
+using LedgerBot.Bot.Channels.Telegram.Polling;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 

@@ -1,5 +1,6 @@
 using LedgerBot.Bot.Channels;
 using LedgerBot.Bot.Channels.Telegram;
+using LedgerBot.Bot.Conversation;
 using LedgerBot.ServiceDefaults;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -35,6 +36,8 @@ builder.Services.AddScoped<IIncomingMessageHandler, EchoMessageHandler>();
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+
+app.MapTelegramChannel();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
