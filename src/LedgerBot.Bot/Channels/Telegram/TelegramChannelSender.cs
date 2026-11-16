@@ -1,9 +1,8 @@
 using System.Globalization;
-using Telegram.Bot;
 
 namespace LedgerBot.Bot.Channels.Telegram;
 
-public sealed class TelegramChannelClient(ITelegramBotClient bot) : IChannelClient
+public sealed class TelegramChannelSender(ITelegramBotClient bot) : IChannelSender
 {
     public async Task SendTextAsync(string chatId, string text, CancellationToken cancellationToken = default)
     {

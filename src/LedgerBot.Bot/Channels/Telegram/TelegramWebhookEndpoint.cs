@@ -1,21 +1,19 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Options;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace LedgerBot.Bot.Channels.Telegram.Webhook;
+namespace LedgerBot.Bot.Channels.Telegram;
 
 public static class TelegramWebhookEndpoint
 {
-    public const string Path = "/telegram/webhook";
+    public const string Route = "/telegram/webhook";
 
     private const string SecretHeader = "X-Telegram-Bot-Api-Secret-Token";
 
     public static RouteHandlerBuilder MapTelegramWebhookEndpoint(this IEndpointRouteBuilder endpoints)
     {
         return endpoints
-            .MapPost(Path, HandleAsync)
+            .MapPost(Route, HandleAsync)
             .WithTags("Telegram")
             .WithName("TelegramWebhook")
             .WithSummary("Telegram Webhook")
@@ -37,6 +35,7 @@ public static class TelegramWebhookEndpoint
         }
 
         var update = await context.Request.ReadFromJsonAsync<Update>(JsonBotAPI.Options, cancellationToken);
+
         var incoming = update?.Message?.ToIncomingMessage();
         if (incoming is null)
         {

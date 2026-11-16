@@ -37,7 +37,7 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-app.MapTelegramChannel();
+app.MapTelegramWebhookEndpoint();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
