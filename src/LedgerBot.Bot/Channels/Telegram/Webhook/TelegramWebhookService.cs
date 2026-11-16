@@ -2,9 +2,9 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
-namespace LedgerBot.Bot.Channels.Telegram;
+namespace LedgerBot.Bot.Channels.Telegram.Webhook;
 
-public sealed class TelegramWebhookRegistrationService(
+public sealed class TelegramWebhookService(
     ITelegramBotClient bot,
     IOptions<TelegramOptions> options) : IHostedService
 {

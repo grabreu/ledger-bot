@@ -3,7 +3,7 @@ using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace LedgerBot.Bot.Channels.Telegram;
+namespace LedgerBot.Bot.Channels.Telegram.Polling;
 
 public sealed class TelegramPollingService(
     TelegramBotClient bot,
@@ -28,7 +28,7 @@ public sealed class TelegramPollingService(
 
     private async Task OnMessage(Message message, UpdateType type)
     {
-        var incoming = TelegramMessageMapper.ToIncomingMessage(message);
+        var incoming = message.ToIncomingMessage();
         if (incoming is null)
         {
             return;

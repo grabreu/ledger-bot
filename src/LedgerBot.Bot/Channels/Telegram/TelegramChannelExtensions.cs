@@ -1,3 +1,5 @@
+using LedgerBot.Bot.Channels.Telegram.Polling;
+using LedgerBot.Bot.Channels.Telegram.Webhook;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 
@@ -25,7 +27,7 @@ public static class TelegramChannelExtensions
         var mode = builder.Configuration.GetValue<TelegramMode>($"{TelegramOptions.SectionName}:Mode");
         if (mode == TelegramMode.Webhook)
         {
-            builder.Services.AddHostedService<TelegramWebhookRegistrationService>();
+            builder.Services.AddHostedService<TelegramWebhookService>();
         }
         else
         {
@@ -33,6 +35,16 @@ public static class TelegramChannelExtensions
         }
 
         return builder;
+    }
+
+    public static WebApplication MapTelegramChannel(this WebApplication app)
+    {
+        if (app.Services.GetRequiredService<IOptions<TelegramOptions>>().Value.Mode == TelegramMode.Webhook)
+        {
+            app.MapTelegramWebhookEndpoint();
+        }
+
+        return app;
     }
 
     private static bool IsValidSecret(string secret)
