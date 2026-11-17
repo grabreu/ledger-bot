@@ -8,10 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.DevTunnels" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LedgerBot.Bot\LedgerBot.Bot.csproj" />
+    <ProjectReference Include="..\LedgerBot.Api\LedgerBot.Api.csproj" />
   </ItemGroup>
 
 </Project>
