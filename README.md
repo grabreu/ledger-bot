@@ -10,14 +10,14 @@ _Backend only, on purpose: there is no dashboard. The bot is the interface and a
 
 ## Tech stack
 
-In use: .NET (ASP.NET Core), modular monolith with Vertical Slice Architecture · EF Core + SQL Server · Telegram Bot API (webhook) · .NET Aspire (local development) · OpenTelemetry
+In use: .NET (ASP.NET Core), modular monolith with Vertical Slice Architecture · EF Core + SQL Server · Telegram Bot API (webhook in production, polling locally) · .NET Aspire (local development) · OpenTelemetry
 
-Planned: HotChocolate (GraphQL) · Gemini API behind a provider abstraction · Azure Container Apps
+Planned: HotChocolate (GraphQL) · Azure OpenAI behind a provider abstraction · Azure Container Apps
 
 ## Implemented
 
-- Telegram webhook with secret token validation.
-- Message interpretation behind an LLM provider abstraction, with a fake provider; the bot replies with the interpreted entry.
+- Telegram updates through a webhook (secret token validation) or polling for local development; the bot currently echoes the text it receives.
+- An `ILlmProvider` abstraction with a fake provider (not wired to the bot at the moment).
 - `Ledger` module with the `LedgerEntry` schema and EF Core migrations (not yet wired to the bot).
 
 ## Planned features
@@ -37,13 +37,13 @@ dotnet build --configuration Release
 dotnet test --configuration Release
 ```
 
-Run locally through the AppHost (needs Docker, a Telegram bot token, and a Dev Tunnel for the webhook):
+Run locally through the AppHost (needs Docker and a Telegram bot token; the bot runs in polling mode):
 
 ```bash
 dotnet run --project src/LedgerBot.AppHost
 ```
 
-The AppHost asks for the `telegram-bot-token` parameter and starts SQL Server, the API and the tunnel.
+The AppHost asks for the `telegram-bot-token` parameter and starts SQL Server and the API.
 
 ## Deployment
 

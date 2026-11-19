@@ -7,7 +7,7 @@ public sealed class LedgerDbContextFactory : IDesignTimeDbContextFactory<LedgerD
         var optionsBuilder = new DbContextOptionsBuilder<LedgerDbContext>();
 
         optionsBuilder.UseSqlServer(
-            "Server=(localdb)\\mssqllocaldb;Database=ledgerbot;Trusted_Connection=True;MultipleActiveResultSets=true",
+            "Server=(localdb)\\mssqllocaldb;Database=LedgerBot;Trusted_Connection=True;MultipleActiveResultSets=true",
             sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Ledger"));
 
         return new LedgerDbContext(optionsBuilder.Options);

@@ -7,7 +7,7 @@ public static class LedgerModuleExtensions
     public static IHostApplicationBuilder AddLedgerModuleServices(this IHostApplicationBuilder builder)
     {
         builder.AddSqlServerDbContext<LedgerDbContext>(
-            "ledgerbot",
+            "LedgerBot",
             configureDbContextOptions: options => options.UseSqlServer(sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Ledger")));
 
         return builder;
