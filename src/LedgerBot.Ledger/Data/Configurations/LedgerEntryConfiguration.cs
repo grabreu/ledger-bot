@@ -1,4 +1,6 @@
 using LedgerBot.Ledger.Domain;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LedgerBot.Ledger.Data.Configurations;
 

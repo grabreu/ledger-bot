@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LedgerBot.Bot.Telegram;
 
 public enum TelegramMode { Polling, Webhook }

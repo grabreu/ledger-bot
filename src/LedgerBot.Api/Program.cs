@@ -2,6 +2,8 @@ using LedgerBot.Bot;
 using LedgerBot.Ledger;
 using LedgerBot.Llm;
 using LedgerBot.ServiceDefaults;
+using Microsoft.OpenApi;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

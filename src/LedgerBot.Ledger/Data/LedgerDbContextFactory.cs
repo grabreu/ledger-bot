@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+
 namespace LedgerBot.Ledger.Data;
 
 public sealed class LedgerDbContextFactory : IDesignTimeDbContextFactory<LedgerDbContext>

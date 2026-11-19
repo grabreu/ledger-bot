@@ -1,4 +1,11 @@
 using LedgerBot.Bot.Telegram;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
 
 namespace LedgerBot.Bot;
 

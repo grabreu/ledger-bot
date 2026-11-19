@@ -1,3 +1,11 @@
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
+using Telegram.Bot.Types;
+
 namespace LedgerBot.Bot.Telegram;
 
 public static class TelegramWebhookEndpoint

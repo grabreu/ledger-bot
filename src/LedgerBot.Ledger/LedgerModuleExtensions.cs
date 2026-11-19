@@ -1,4 +1,7 @@
 using LedgerBot.Ledger.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace LedgerBot.Ledger;
 

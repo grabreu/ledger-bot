@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
+
 namespace LedgerBot.Bot.Telegram;
 
 public sealed class TelegramWebhookService(ITelegramBotClient bot, IOptions<TelegramOptions> options) : IHostedService

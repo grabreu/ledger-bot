@@ -1,4 +1,5 @@
 using LedgerBot.Llm.Contracts;
+using Microsoft.Extensions.AI;
 
 namespace LedgerBot.Llm;
 
