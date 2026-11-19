@@ -1,4 +1,6 @@
 using LedgerBot.Llm.Contracts;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace LedgerBot.Llm;
 
