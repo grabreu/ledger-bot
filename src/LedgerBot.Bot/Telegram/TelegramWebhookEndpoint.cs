@@ -1,4 +1,10 @@
-using LedgerBot.Bot.Features.InterpretMessage;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
+using Telegram.Bot.Types;
 
 namespace LedgerBot.Bot.Telegram;
 
@@ -20,24 +26,19 @@ public static class TelegramWebhookEndpoint
             .Produces(StatusCodes.Status401Unauthorized);
     }
 
-    // Provisional: the update is handled inside the request until the inbox exists.
     private static async Task<IResult> HandleAsync(
-        HttpContext context,
-        IOptions<TelegramSettings> options,
-        InterpretMessageHandler handler,
+        HttpRequest request,
+        Update update,
+        TelegramUpdateHandler handler,
+        IOptions<TelegramOptions> options,
         CancellationToken cancellationToken)
     {
-        if (!HasValidSecret(context.Request, options.Value.WebhookSecret))
+        if (!HasValidSecret(request, options.Value.WebhookSecret))
         {
             return Results.Unauthorized();
         }
 
-        var update = await context.Request.ReadFromJsonAsync<Update>(JsonBotAPI.Options, cancellationToken);
-
-        if (update?.Message is { From: not null, Text: { } text } message && !string.IsNullOrWhiteSpace(text))
-        {
-            await handler.HandleAsync(message.Chat.Id, text, cancellationToken);
-        }
+        await handler.HandleAsync(update, cancellationToken);
 
         return Results.Ok();
     }
@@ -45,7 +46,6 @@ public static class TelegramWebhookEndpoint
     private static bool HasValidSecret(HttpRequest request, string expected)
     {
         var provided = request.Headers[SecretHeader].ToString();
-
         return CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(provided), Encoding.UTF8.GetBytes(expected));
     }
 }

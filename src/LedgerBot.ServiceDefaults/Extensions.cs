@@ -45,11 +45,12 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    .AddMeter("LedgerBot.*");
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
+                tracing.AddSource(builder.Environment.ApplicationName, "LedgerBot.*")
                     .AddAspNetCoreInstrumentation(tracing =>
                         tracing.Filter = context =>
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath)

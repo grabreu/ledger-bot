@@ -51,7 +51,7 @@ Layout (one project per module, plus a `*.Contracts` project each; only the host
 - `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
 - `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
 - `src/LedgerBot.Api`: host and composition root only (Program, API docs, GraphQL).
-- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (settings, webhook endpoint with secret validation, webhook registration). Handlers use `ITelegramBotClient` directly.
+- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update handler, webhook endpoint with secret validation and webhook registration, polling service). Handlers use `ITelegramBotClient` directly.
 - `src/LedgerBot.Households` (User, Household, Membership, Invite)
 - `src/LedgerBot.Ledger` (Category, LedgerEntry)
 - `src/LedgerBot.Llm` (provider abstraction, read-only tools, LlmCall)
@@ -62,7 +62,7 @@ Rules that hold regardless of layout:
 
 - The LLM never writes. It calls read-only typed tools, or returns an interpreted entry that code validates (amount, category, date) and saves. Undo and delete come from buttons, never from model output.
 - Entries are saved directly with an Undo button; confirmation is required first when the amount is missing, the category does not exist yet, or the date is not today (a deterministic rule, not a model-reported confidence).
-- Telegram runs in webhook mode only (no polling); in development the AppHost exposes the bot through a Dev Tunnel. Updates are processed on the spot, in the request; pending confirmations live in the database. Validate `X-Telegram-Bot-Api-Secret-Token` on every request.
+- Telegram has two modes (`Telegram:Mode`): `Webhook` (production, the default in `appsettings.json`) and `Polling` (local development, set in `appsettings.Development.json`, no public URL or tunnel needed). Both share one update handler. Updates are processed on the spot (in the request, or in the polling callback); pending confirmations live in the database. In webhook mode validate `X-Telegram-Bot-Api-Secret-Token` on every request; the endpoint is not mapped in polling mode.
 - Use `Ledger` and `LedgerEntry` (with `LedgerEntryKind`: `Income` | `Expense`) for the domain, never "Transaction" (it collides with database transactions).
 - Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
 - Telegram is the only channel, with no channel abstraction; a user is identified by the Telegram user id.
@@ -93,5 +93,5 @@ Infrastructure smoke tests (for example `/health`) stay as plain xunit tests.
 ### Open Questions
 
 - TODO: dedup of Telegram updates by `update_id` (SQL table with id and status, no message content) before production. Until then updates are processed on the spot. The original message text is not stored with entries.
-- Gemini API with billing enabled on the project: the paid terms exclude prompts and responses from product improvement (Gemini API Additional Terms, effective 2026-03-23). Google still logs paid usage for an unspecified time for abuse monitoring, with no opt-out found. TODO: confirm that free-quota usage on a billed project counts as paid (inferred, not stated), and check that customer-side logs (on by default for projects created on or after 2026-10-26) are disabled.
+- LLM provider: Azure OpenAI (`gpt-4.1-nano`, Global Standard deployment), pay as you go on the existing Azure subscription; the quota request is pending. Gemini was dropped (it asked for a BRL 170 prepaid deposit). TODO: confirm the Azure OpenAI data-use terms (training, retention) in the official docs.
 - Deploy starts with `minReplicas=0` (no compute cost within the free grants; `minReplicas=1` would be about USD 10 (roughly BRL 54) per month against a BRL 50 budget). Only safe after the `update_id` dedup, because a cold start may make Telegram resend an update. Keep at 0 unless the cold start gets in the way and the budget changes. TODO: check the "Environment Management Hour" meter in the first month's cost analysis.

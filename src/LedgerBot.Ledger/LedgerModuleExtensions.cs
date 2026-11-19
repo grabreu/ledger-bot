@@ -1,4 +1,7 @@
 using LedgerBot.Ledger.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace LedgerBot.Ledger;
 
@@ -7,7 +10,7 @@ public static class LedgerModuleExtensions
     public static IHostApplicationBuilder AddLedgerModuleServices(this IHostApplicationBuilder builder)
     {
         builder.AddSqlServerDbContext<LedgerDbContext>(
-            "ledgerbot",
+            "LedgerBot",
             configureDbContextOptions: options => options.UseSqlServer(sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Ledger")));
 
         return builder;
