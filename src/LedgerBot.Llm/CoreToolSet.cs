@@ -13,6 +13,6 @@ public sealed class CoreToolSet(TimeProvider time) : ILlmToolSet
         yield return AIFunctionFactory.Create(GetCurrentDate, name: "core_get_current_date");
     }
 
-    [Description("Retorna a data atual do usuário (yyyy-MM-dd).")]
+    [Description("Returns today's date for the user (America/Sao_Paulo) as yyyy-MM-dd. Call it whenever the answer depends on the current date, such as \"today\", \"yesterday\", \"this month\" or \"this week\". Never guess the date.")]
     private string GetCurrentDate() => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(time.GetUtcNow(), s_brt).DateTime).ToString("yyyy-MM-dd");
 }
