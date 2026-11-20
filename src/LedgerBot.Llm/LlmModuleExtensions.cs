@@ -1,5 +1,6 @@
 using System.ClientModel;
 using LedgerBot.Llm.Contracts;
+using LedgerBot.Llm.Tools;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -32,13 +33,15 @@ public static class LlmModuleExtensions
                 return new ChatClient(
                         options.Deployment,
                         new ApiKeyCredential(options.ApiKey),
-                        new OpenAIClientOptions { Endpoint = new Uri(options.Endpoint) })
+                        new OpenAIClientOptions { Endpoint = new(options.Endpoint) })
                     .AsIChatClient();
             })
             .UseFunctionInvocation(configure: client => client.MaximumIterationsPerRequest = MaximumToolIterations)
             .UseOpenTelemetry(sourceName: TelemetrySourceName, configure: client => client.EnableSensitiveData = false);
 
         builder.Services.AddScoped<ILlmToolSet, CoreToolSet>();
+        builder.Services.AddScoped<ILlmToolSet, LedgerToolSet>();
+
         builder.Services.AddScoped<ILlmService, LlmService>();
 
         return builder;

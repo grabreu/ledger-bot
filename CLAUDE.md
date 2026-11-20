@@ -2,7 +2,7 @@
 
 ## Repository
 
-A household expense tracker driven by a Telegram bot and an LLM. Messages in natural language (PT-BR) become ledger entries; questions are answered from the household's own data. Backend only by design: no frontend, the bot is the interface. The LLM never writes data: it calls read-only typed tools or returns an interpreted entry that code validates and saves.
+An expense tracker driven by a Telegram bot and an LLM. Messages in natural language (PT-BR) become ledger entries; questions are answered from the user's own data. Backend only by design: no frontend, the bot is the interface. The LLM acts only through typed tools; writes go through a command that code validates (see the LLM rules below).
 
 Read `README.md` before making changes: it documents the project pitch and how to run it. Significant, hard-to-reverse decisions are recorded in `docs/adr/`: check it before revisiting one, and add an entry when making a new one. The design draft (domain model and technical decisions) lives in the private `rascunho` repository under `ideas/ledger-bot/`.
 
@@ -44,28 +44,29 @@ Future-you revisiting this months later, or someone browsing the portfolio to se
 
 ### Source
 
-.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Households, Ledger, Reminders, Llm; `Api` is the host (Telegram webhook). Modules talk through events and `*.Contracts` interfaces, never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
+.NET (ASP.NET Core), modular monolith with Vertical Slice Architecture: one slice per use case, with command or query, handler, and endpoint colocated. Modules: Ledger, Reminders, Llm; `Api` is the host (Telegram webhook). Modules talk through the commands, queries and DTOs of their `*.Contracts` project (dispatched with Mediator, returning `Result` from Desfecho), never by referencing each other's internals. One SQL Server database, one schema per module, no foreign keys across schemas.
 
 Layout (one project per module, plus a `*.Contracts` project each; only the hosts, `Bot`, `Ledger` and `Llm` exist so far, modules are added with their first slice):
 
 - `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
 - `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
 - `src/LedgerBot.Api`: host and composition root only (Program, API docs).
-- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update handler, webhook endpoint with secret validation and webhook registration, polling service). Handlers use `ITelegramBotClient` directly.
-- `src/LedgerBot.Households` (User, Household, Membership, Invite)
-- `src/LedgerBot.Ledger` (Category, LedgerEntry)
-- `src/LedgerBot.Llm` (`ILlmService` over an `IChatClient`, read-only tool sets, LlmCall)
+- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update dispatcher, webhook endpoint with secret validation and webhook registration, polling service). Handlers use `ITelegramBotClient` directly.
+- `src/LedgerBot.Ledger` (Entry)
+- `src/LedgerBot.Llm` (`ILlmService` over an `IChatClient`, tool sets, LlmCall)
 - `src/LedgerBot.Reminders` (Reminder; v1.1)
 - `tests/LedgerBot.*.Tests`
 
 Rules that hold regardless of layout:
 
-- The LLM never writes. It calls read-only typed tools, or returns an interpreted entry that code validates (amount, category, date) and saves. Undo and delete come from buttons, never from model output.
-- Entries are saved directly with an Undo button; confirmation is required first when the amount is missing, the category does not exist yet, or the date is not today (a deterministic rule, not a model-reported confidence).
-- Telegram has two modes (`Telegram:Mode`): `Webhook` (production, the default in `appsettings.json`) and `Polling` (local development, set in `appsettings.Development.json`, no public URL or tunnel needed). Both share one update handler. Updates are processed on the spot (in the request, or in the polling callback); pending confirmations live in the database. In webhook mode validate `X-Telegram-Bot-Api-Secret-Token` on every request; the endpoint is not mapped in polling mode.
-- Use `Ledger` and `LedgerEntry` (with `LedgerEntryKind`: `Income` | `Expense`) for the domain, never "Transaction" (it collides with database transactions).
+- LLM tools are the router: read tools run directly; a write tool (add entry) runs a Ledger command, and the chat, user and validation (amount, category, date) are fixed in code, never taken from model output. Undo comes from a button. The Bot builds buttons from structured outcomes, not from model text.
+- Commands and queries are validated by a FluentValidation validator in a Mediator pipeline behavior (`Ledger/ValidationBehavior`, registered by the Ledger module).
+- Basic model first: `CreateEntryCommand` returns `Result<Guid>` (the entry id, or validation errors), with no confirmation step yet. TODO: decide whether confirmation (missing amount, new category, date not today) is needed; if so it is a deterministic rule, not a model-reported confidence.
+- TODO: delete and edit need user approval (button or approval-required tool), never model output alone; one write per message (guard against duplicate tool calls); description length limit.
+- Telegram has two modes (`Telegram:Mode`): `Webhook` (production, the default in `appsettings.json`) and `Polling` (local development, set in `appsettings.Development.json`, no public URL or tunnel needed). Both share one update dispatcher. Updates are processed on the spot (in the request, or in the polling callback); pending confirmations live in the database. In webhook mode validate `X-Telegram-Bot-Api-Secret-Token` on every request; the endpoint is not mapped in polling mode.
+- Use `Ledger` and `Entry` (with `EntryKind`: `Income` | `Expense`) for the domain, never "Transaction" (it collides with database transactions).
 - Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
-- Telegram is the only channel, with no channel abstraction; a user is identified by the Telegram user id.
+- Telegram is the only channel, with no channel abstraction; a user is identified by the Telegram user id. Entries are scoped by Telegram chat id (private chat: personal ledger; group: shared ledger), see `docs/adr/0001-scope-the-ledger-by-telegram-chat.md`.
 - Never log message content; LLM calls record model, prompt version, tokens, estimated cost, latency, and outcome only.
 - Secrets (bot token, webhook secret, LLM key) come from configuration, never from code.
 

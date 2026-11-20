@@ -17,19 +17,17 @@ builder.Services.AddOpenApi(options =>
         {
             Title = "Ledger Bot API",
             Version = "v1",
-            Description = "Household expense tracker driven by a Telegram bot and an LLM.",
-            Contact = new OpenApiContact
+            Description = "Expense tracker driven by a Telegram bot and an LLM.",
+            Contact = new()
             {
                 Name = "Gabriel Abreu",
-                Url = new Uri("https://grabreu.dev")
+                Url = new("https://grabreu.dev")
             }
         };
         document.Servers = [];
         return Task.CompletedTask;
     });
 });
-
-builder.Services.AddSingleton(TimeProvider.System);
 
 builder.AddBotModuleServices();
 builder.AddLlmModuleServices();
@@ -45,6 +43,6 @@ app.Map("/", () => Results.Redirect("/scalar"));
 
 app.MapBotModuleEndpoints();
 
-await app.EnsureLedgerModuleDatabaseAsync();
+await app.MigrateLedgerModuleDatabaseAsync();
 
 await app.RunAsync();

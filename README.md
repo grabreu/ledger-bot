@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/grabreu/ledger-bot?style=flat-square)](LICENSE)
 
-A household expense tracker driven by a chat bot (Telegram first) and an LLM that never writes data. Write "gastei 45 no mercado" and it becomes a ledger entry; ask "quanto gastei com mercado em outubro?" and it answers from your own data.
+An expense tracker driven by a chat bot (Telegram first) and an LLM that acts only through validated tools. Write "gastei 45 no mercado" and it becomes a ledger entry; ask "quanto gastei com mercado em outubro?" and it answers from your own data.
 
 _Backend only, on purpose: there is no dashboard. The bot is the interface._
 
@@ -17,14 +17,14 @@ Planned: Azure Container Apps
 ## Implemented
 
 - Telegram updates through a webhook (secret token validation) or polling for local development; messages are answered by the LLM service.
-- `Llm` module: an `ILlmService` backed by an Azure OpenAI chat client with function calling, a scoped system prompt (household budget only) and one read-only tool (current date). Ledger tools are not there yet.
-- `Ledger` module with the `LedgerEntry` schema and EF Core migrations (not yet wired to the bot).
+- `Llm` module: an `ILlmService` backed by an Azure OpenAI chat client with function calling, a scoped system prompt (budget topics only) and tools to get the current date, record an entry, and get a total or list entries.
+- `Ledger` module: `Entry` schema with EF Core migrations (applied on startup) and use cases to create and delete entries and to get a total or list them. Delete is not exposed to the bot yet.
 
 ## Planned features
 
-- **Natural-language entries**: income and expenses in PT-BR, saved with an Undo button, or confirmed first when the amount is missing, the category is new, or the date is not today.
-- **Questions about your data**: answered through read-only typed tools; the model never writes.
-- **Households**: one shared ledger per household; the owner manages members and deletion.
+- **Natural-language entries**: income and expenses in PT-BR, saved through a validated command, with an Undo button. TODO: confirmation rules.
+- **Questions about your data**: answered through read-only typed tools.
+- **Shared ledger**: one ledger per Telegram chat; add the bot to a group to share it.
 - **Idempotent Telegram updates**: processed at most once per `update_id`.
 
 The reasoning behind these decisions will live in `docs/adr/`.

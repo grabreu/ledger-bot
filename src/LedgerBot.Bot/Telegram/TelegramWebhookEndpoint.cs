@@ -29,7 +29,7 @@ public static class TelegramWebhookEndpoint
     private static async Task<IResult> HandleAsync(
         HttpRequest request,
         Update update,
-        TelegramUpdateHandler handler,
+        TelegramUpdateDispatcher dispatcher,
         IOptions<TelegramOptions> options,
         CancellationToken cancellationToken)
     {
@@ -38,7 +38,7 @@ public static class TelegramWebhookEndpoint
             return Results.Unauthorized();
         }
 
-        await handler.HandleAsync(update, cancellationToken);
+        await dispatcher.DispatchAsync(update, cancellationToken);
 
         return Results.Ok();
     }

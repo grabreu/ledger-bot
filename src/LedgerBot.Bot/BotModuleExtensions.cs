@@ -20,7 +20,7 @@ public static class BotModuleExtensions
 
         builder.Services.AddSingleton(sp => new TelegramBotClient(sp.GetRequiredService<IOptions<TelegramOptions>>().Value.BotToken));
         builder.Services.AddSingleton<ITelegramBotClient>(sp => sp.GetRequiredService<TelegramBotClient>());
-        builder.Services.AddScoped<TelegramUpdateHandler>();
+        builder.Services.AddScoped<TelegramUpdateDispatcher>();
 
         var mode = builder.Configuration.GetSection(TelegramOptions.SectionName).Get<TelegramOptions>()?.Mode ?? TelegramMode.Webhook;
 
