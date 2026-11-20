@@ -9,7 +9,7 @@ public sealed class CreateEntryValidator : AbstractValidator<CreateEntryCommand>
     {
         RuleFor(x => x.ChatId).NotEmpty();
         RuleFor(x => x.Kind).IsInEnum();
-        RuleFor(x => x.Amount).GreaterThan(0);
+        RuleFor(x => x.Amount).GreaterThan(0).PrecisionScale(18, 2, true);
         RuleFor(x => x.Description).MaximumLength(200);
         RuleFor(x => x.CreatedBy).GreaterThan(0);
     }
