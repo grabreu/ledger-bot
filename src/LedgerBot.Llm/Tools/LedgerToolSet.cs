@@ -22,9 +22,9 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
             (
                 [Description("Expense for money spent (gastei, paguei, comprei); Income for money received (recebi, ganhei, salário)")] EntryKind kind,
                 [Description("Amount in BRL as a positive number without currency symbol, for example 45.90")] decimal amount,
-                [Description("Date the entry happened as yyyy-MM-dd; today's date when the user does not say otherwise")] DateOnly ocurredOn,
+                [Description("Date the entry happened as yyyy-MM-dd; today's date when the user does not say otherwise")] DateOnly occurredOn,
                 [Description("Short label of what it was, taken from the user's words, for example \"mercado\"; no amounts or dates")] string description,
-                CancellationToken cancellationToken) => CreateEntryAsync(user, kind, amount, ocurredOn, description, cancellationToken),
+                CancellationToken cancellationToken) => CreateEntryAsync(user, kind, amount, occurredOn, description, cancellationToken),
             new AIFunctionFactoryOptions { Name = "ledger_create_entry", Description = CreateEntryDescription });
 
         yield return AIFunctionFactory.Create(
@@ -49,11 +49,11 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
         UserContext user,
         EntryKind kind,
         decimal amount,
-        DateOnly ocurredOn,
+        DateOnly occurredOn,
         string description,
         CancellationToken cancellationToken)
     {
-        var command = new CreateEntryCommand(user.ChatId, kind, amount, ocurredOn, description, user.TelegramUserId);
+        var command = new CreateEntryCommand(user.ChatId, kind, amount, occurredOn, description, user.TelegramUserId);
         var result = await sender.Send(command, cancellationToken);
         return result.Match(
             value => new CreateEntryToolResult(Saved: true, value, []),
