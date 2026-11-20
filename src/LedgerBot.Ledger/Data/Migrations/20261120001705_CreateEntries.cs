@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LedgerBot.Ledger.Data.Migrations;
 
 /// <inheritdoc />
-public partial class AddLedgerEntrySchema : Migration
+public partial class _20261120001705_CreateEntries : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,12 +15,12 @@ public partial class AddLedgerEntrySchema : Migration
             name: "Ledger");
 
         migrationBuilder.CreateTable(
-            name: "LedgerEntries",
+            name: "Entries",
             schema: "Ledger",
             columns: table => new
             {
                 Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                HouseholdId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                ChatId = table.Column<long>(type: "bigint", nullable: false),
                 Kind = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                 Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                 OccurredOn = table.Column<DateOnly>(type: "date", nullable: false),
@@ -29,21 +30,21 @@ public partial class AddLedgerEntrySchema : Migration
             },
             constraints: table =>
             {
-                table.PrimaryKey("PK_LedgerEntries", x => x.Id);
+                table.PrimaryKey("PK_Entries", x => x.Id);
             });
 
         migrationBuilder.CreateIndex(
-            name: "IX_LedgerEntries_HouseholdId_OccurredOn",
+            name: "IX_Entries_ChatId_OccurredOn",
             schema: "Ledger",
-            table: "LedgerEntries",
-            columns: ["HouseholdId", "OccurredOn"]);
+            table: "Entries",
+            columns: new[] { "ChatId", "OccurredOn" });
     }
 
     /// <inheritdoc />
     protected override void Down(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.DropTable(
-            name: "LedgerEntries",
+            name: "Entries",
             schema: "Ledger");
     }
 }

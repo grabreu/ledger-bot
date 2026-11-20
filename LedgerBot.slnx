@@ -14,6 +14,7 @@
     <Project Path="src/LedgerBot.ServiceDefaults/LedgerBot.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Ledger Module/">
+    <Project Path="src/LedgerBot.Ledger.Contracts/LedgerBot.Ledger.Contracts.csproj" Id="e64a4137-62df-4a54-847c-2f6a48d16799" />
     <Project Path="src/LedgerBot.Ledger/LedgerBot.Ledger.csproj" Id="26de7393-ab2a-4736-a56b-26037c6a70ea" />
     <Project Path="tests/LedgerBot.Ledger.Tests/LedgerBot.Ledger.Tests.csproj" Id="1d8a0f95-80fd-4dbf-96b0-8f8bc3557fb7" />
   </Folder>

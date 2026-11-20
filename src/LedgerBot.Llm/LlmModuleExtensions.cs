@@ -1,5 +1,6 @@
 using System.ClientModel;
 using LedgerBot.Llm.Contracts;
+using LedgerBot.Llm.Tools;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -39,6 +40,8 @@ public static class LlmModuleExtensions
             .UseOpenTelemetry(sourceName: TelemetrySourceName, configure: client => client.EnableSensitiveData = false);
 
         builder.Services.AddScoped<ILlmToolSet, CoreToolSet>();
+        builder.Services.AddScoped<ILlmToolSet, LedgerToolSet>();
+
         builder.Services.AddScoped<ILlmService, LlmService>();
 
         return builder;

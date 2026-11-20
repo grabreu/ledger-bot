@@ -24,7 +24,7 @@ Planned: Azure Container Apps
 
 - **Natural-language entries**: income and expenses in PT-BR, saved through a validated command, with an Undo button. TODO: confirmation rules.
 - **Questions about your data**: answered through read-only typed tools.
-- **Households**: one shared ledger per household; the owner manages members and deletion.
+- **Shared ledger**: one ledger per Telegram chat; add the bot to a group to share it.
 - **Idempotent Telegram updates**: processed at most once per `update_id`.
 
 The reasoning behind these decisions will live in `docs/adr/`.

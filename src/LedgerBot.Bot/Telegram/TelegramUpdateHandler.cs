@@ -8,13 +8,14 @@ public sealed class TelegramUpdateHandler(ITelegramBotClient bot, ILlmService ll
 {
     public async Task HandleAsync(Update update, CancellationToken cancellationToken = default)
     {
-        if (update.Message is not { Text: { } text } message)
+        if (update.Message is not { Text: { } text, From: { } from } message)
         {
             return;
         }
 
-        // No conversation is persisted yet, so each message gets its own id.
-        var response = await llm.ProcessMessageAsync(Guid.NewGuid(), text, cancellationToken);
+        var user = new UserContext(message.Chat.Id, from.Id);
+
+        var response = await llm.ProcessMessageAsync(user, text, cancellationToken);
 
         await bot.SendMessage(message.Chat.Id, response.Message, cancellationToken: cancellationToken);
     }

@@ -2,13 +2,13 @@ using System.ComponentModel;
 using LedgerBot.Llm.Contracts;
 using Microsoft.Extensions.AI;
 
-namespace LedgerBot.Llm;
+namespace LedgerBot.Llm.Tools;
 
 public sealed class CoreToolSet(TimeProvider time) : ILlmToolSet
 {
     private static readonly TimeZoneInfo s_brt = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
 
-    public IEnumerable<AITool> GetTools()
+    public IEnumerable<AITool> GetTools(UserContext user)
     {
         yield return AIFunctionFactory.Create(GetCurrentDate, name: "core_get_current_date");
     }

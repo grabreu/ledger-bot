@@ -1,3 +1,5 @@
+using Desfecho;
+using LedgerBot.Api;
 using LedgerBot.Bot;
 using LedgerBot.Ledger;
 using LedgerBot.Llm;
@@ -29,7 +31,11 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddMediator(options =>
+{
+    options.ServiceLifetime = ServiceLifetime.Scoped;
+    options.PipelineBehaviors = [typeof(ValidationBehavior<,>)];
+});
 
 builder.AddBotModuleServices();
 builder.AddLlmModuleServices();

@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LedgerBot.Ledger.Data.Configurations;
 
-public sealed class LedgerEntryConfiguration : IEntityTypeConfiguration<LedgerEntry>
+public sealed class EntryConfiguration : IEntityTypeConfiguration<Entry>
 {
-    public void Configure(EntityTypeBuilder<LedgerEntry> builder)
+    public void Configure(EntityTypeBuilder<Entry> builder)
     {
         builder.HasKey(x => x.Id);
 
@@ -20,6 +20,6 @@ public sealed class LedgerEntryConfiguration : IEntityTypeConfiguration<LedgerEn
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 
-        builder.HasIndex(x => new { x.HouseholdId, x.OccurredOn });
+        builder.HasIndex(x => new { x.ChatId, x.OccurredOn });
     }
 }

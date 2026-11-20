@@ -1,3 +1,5 @@
+using System.Reflection;
+using FluentValidation;
 using LedgerBot.Ledger.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,8 @@ public static class LedgerModuleExtensions
             "LedgerBot",
             configureDbContextOptions: options => options.UseSqlServer(sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Ledger")));
 
+        builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
         return builder;
     }
 
@@ -20,6 +24,7 @@ public static class LedgerModuleExtensions
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<LedgerDbContext>();
-        await context.Database.MigrateAsync();
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();
     }
 }
