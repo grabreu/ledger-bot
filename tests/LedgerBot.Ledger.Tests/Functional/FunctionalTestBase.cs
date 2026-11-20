@@ -28,7 +28,7 @@ public abstract class FunctionalTestBase(FunctionalTestFixture fixture)
     {
         using var scope = fixture.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<LedgerDbContext>();
-        return await dbContext.FindAsync<TEntity>(keyValues);
+        return await dbContext.FindAsync<TEntity>(keyValues, TestContext.Current.CancellationToken);
     }
 
     protected async Task AddAsync<TEntity>(TEntity entity) where TEntity : class
@@ -36,13 +36,13 @@ public abstract class FunctionalTestBase(FunctionalTestFixture fixture)
         using var scope = fixture.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<LedgerDbContext>();
         dbContext.Add(entity);
-        await dbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 
     public async Task<int> CountAsync<TEntity>() where TEntity : class
     {
         using var scope = fixture.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<LedgerDbContext>();
-        return await dbContext.Set<TEntity>().CountAsync();
+        return await dbContext.Set<TEntity>().CountAsync(TestContext.Current.CancellationToken);
     }
 }
