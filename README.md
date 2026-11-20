@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/github/license/grabreu/ledger-bot?style=flat-square)](LICENSE)
 
-A household expense tracker driven by a chat bot (Telegram first) and an LLM that acts only through validated tools. Write "gastei 45 no mercado" and it becomes a ledger entry; ask "quanto gastei com mercado em outubro?" and it answers from your own data.
+An expense tracker driven by a chat bot (Telegram first) and an LLM that acts only through validated tools. Write "gastei 45 no mercado" and it becomes a ledger entry; ask "quanto gastei com mercado em outubro?" and it answers from your own data.
 
 _Backend only, on purpose: there is no dashboard. The bot is the interface._
 
@@ -17,8 +17,8 @@ Planned: Azure Container Apps
 ## Implemented
 
 - Telegram updates through a webhook (secret token validation) or polling for local development; messages are answered by the LLM service.
-- `Llm` module: an `ILlmService` backed by an Azure OpenAI chat client with function calling, a scoped system prompt (household budget only) and one read-only tool (current date). Ledger tools are not there yet.
-- `Ledger` module with the `LedgerEntry` schema and EF Core migrations (not yet wired to the bot).
+- `Llm` module: an `ILlmService` backed by an Azure OpenAI chat client with function calling, a scoped system prompt (budget topics only) and tools to get the current date, record an entry, and get a total or list entries.
+- `Ledger` module: `Entry` schema with EF Core migrations (applied on startup) and use cases to create and delete entries and to get a total or list them. Delete is not exposed to the bot yet.
 
 ## Planned features
 
