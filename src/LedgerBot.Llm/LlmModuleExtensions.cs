@@ -33,7 +33,7 @@ public static class LlmModuleExtensions
                 return new ChatClient(
                         options.Deployment,
                         new ApiKeyCredential(options.ApiKey),
-                        new OpenAIClientOptions { Endpoint = new Uri(options.Endpoint) })
+                        new OpenAIClientOptions { Endpoint = new(options.Endpoint) })
                     .AsIChatClient();
             })
             .UseFunctionInvocation(configure: client => client.MaximumIterationsPerRequest = MaximumToolIterations)

@@ -18,10 +18,10 @@ builder.Services.AddOpenApi(options =>
             Title = "Ledger Bot API",
             Version = "v1",
             Description = "Expense tracker driven by a Telegram bot and an LLM.",
-            Contact = new OpenApiContact
+            Contact = new()
             {
                 Name = "Gabriel Abreu",
-                Url = new Uri("https://grabreu.dev")
+                Url = new("https://grabreu.dev")
             }
         };
         document.Servers = [];
