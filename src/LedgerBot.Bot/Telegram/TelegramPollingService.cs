@@ -10,6 +10,7 @@ namespace LedgerBot.Bot.Telegram;
 public sealed class TelegramPollingService(
     TelegramBotClient bot,
     IServiceScopeFactory scopeFactory,
+    IHostApplicationLifetime lifetime,
     ILogger<TelegramPollingService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -31,8 +32,8 @@ public sealed class TelegramPollingService(
     private async Task OnUpdate(Update update)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
-        var handler = scope.ServiceProvider.GetRequiredService<TelegramUpdateHandler>();
-        await handler.HandleAsync(update);
+        var dispatcher = scope.ServiceProvider.GetRequiredService<TelegramUpdateDispatcher>();
+        await dispatcher.DispatchAsync(update, lifetime.ApplicationStopping);
     }
 
     private Task OnError(Exception exception, HandleErrorSource source)

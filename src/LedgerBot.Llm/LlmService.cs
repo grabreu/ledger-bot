@@ -68,7 +68,7 @@ public sealed class LlmService(IChatClient chatClient, IEnumerable<ILlmToolSet> 
         Assistant: Só consigo ajudar com as suas finanças. Posso resumir seus gastos de hoje?
         """;
 
-    public async Task<LlmChatResponse> ProcessMessageAsync(UserContext user, string message, CancellationToken cancellationToken = default)
+    public async Task<LlmChatResponse> ProcessMessageAsync(UserContext user, string message, CancellationToken cancellationToken)
     {
         var messages = new List<ChatMessage>
         {

@@ -4,9 +4,9 @@ using Telegram.Bot.Types;
 
 namespace LedgerBot.Bot.Telegram;
 
-public sealed class TelegramUpdateHandler(ITelegramBotClient bot, ILlmService llm)
+public sealed class TelegramUpdateDispatcher(ITelegramBotClient bot, ILlmService llm)
 {
-    public async Task HandleAsync(Update update, CancellationToken cancellationToken = default)
+    public async Task DispatchAsync(Update update, CancellationToken cancellationToken)
     {
         if (update.Message is not { Text: { } text, From: { } from } message)
         {

@@ -24,7 +24,7 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
                 [Description("Amount in BRL as a positive number without currency symbol, for example 45.90")] decimal amount,
                 [Description("Date the entry happened as yyyy-MM-dd; today's date when the user does not say otherwise")] DateOnly occurredOn,
                 [Description("Short label of what it was, taken from the user's words, for example \"mercado\"; no amounts or dates")] string description,
-                CancellationToken cancellationToken) => CreateEntryAsync(user, kind, amount, occurredOn, description, cancellationToken),
+                CancellationToken cancellationToken = default) => CreateEntryAsync(user, kind, amount, occurredOn, description, cancellationToken),
             new AIFunctionFactoryOptions { Name = "ledger_create_entry", Description = CreateEntryDescription });
 
         yield return AIFunctionFactory.Create(

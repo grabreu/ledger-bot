@@ -51,7 +51,7 @@ Layout (one project per module, plus a `*.Contracts` project each; only the host
 - `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
 - `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
 - `src/LedgerBot.Api`: host and composition root only (Program, API docs).
-- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update handler, webhook endpoint with secret validation and webhook registration, polling service). Handlers use `ITelegramBotClient` directly.
+- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update dispatcher, webhook endpoint with secret validation and webhook registration, polling service). Handlers use `ITelegramBotClient` directly.
 - `src/LedgerBot.Ledger` (Entry)
 - `src/LedgerBot.Llm` (`ILlmService` over an `IChatClient`, tool sets, LlmCall)
 - `src/LedgerBot.Reminders` (Reminder; v1.1)
@@ -63,7 +63,7 @@ Rules that hold regardless of layout:
 - Commands and queries are validated by a FluentValidation validator in a Mediator pipeline behavior (`Ledger/ValidationBehavior`, registered by the Ledger module).
 - Basic model first: `CreateEntryCommand` returns `Result<Guid>` (the entry id, or validation errors), with no confirmation step yet. TODO: decide whether confirmation (missing amount, new category, date not today) is needed; if so it is a deterministic rule, not a model-reported confidence.
 - TODO: delete and edit need user approval (button or approval-required tool), never model output alone; one write per message (guard against duplicate tool calls); description length limit.
-- Telegram has two modes (`Telegram:Mode`): `Webhook` (production, the default in `appsettings.json`) and `Polling` (local development, set in `appsettings.Development.json`, no public URL or tunnel needed). Both share one update handler. Updates are processed on the spot (in the request, or in the polling callback); pending confirmations live in the database. In webhook mode validate `X-Telegram-Bot-Api-Secret-Token` on every request; the endpoint is not mapped in polling mode.
+- Telegram has two modes (`Telegram:Mode`): `Webhook` (production, the default in `appsettings.json`) and `Polling` (local development, set in `appsettings.Development.json`, no public URL or tunnel needed). Both share one update dispatcher. Updates are processed on the spot (in the request, or in the polling callback); pending confirmations live in the database. In webhook mode validate `X-Telegram-Bot-Api-Secret-Token` on every request; the endpoint is not mapped in polling mode.
 - Use `Ledger` and `Entry` (with `EntryKind`: `Income` | `Expense`) for the domain, never "Transaction" (it collides with database transactions).
 - Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
 - Telegram is the only channel, with no channel abstraction; a user is identified by the Telegram user id. Entries are scoped by Telegram chat id (private chat: personal ledger; group: shared ledger), see `docs/adr/0001-scope-the-ledger-by-telegram-chat.md`.
