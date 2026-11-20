@@ -1,4 +1,3 @@
-using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -37,7 +36,7 @@ public partial class _20261120001705_CreateEntries : Migration
             name: "IX_Entries_ChatId_OccurredOn",
             schema: "Ledger",
             table: "Entries",
-            columns: new[] { "ChatId", "OccurredOn" });
+            columns: ["ChatId", "OccurredOn"]);
     }
 
     /// <inheritdoc />
