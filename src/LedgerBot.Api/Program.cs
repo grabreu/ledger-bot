@@ -1,4 +1,3 @@
-using LedgerBot.Api;
 using LedgerBot.Bot;
 using LedgerBot.Ledger;
 using LedgerBot.Llm;
@@ -28,12 +27,6 @@ builder.Services.AddOpenApi(options =>
         document.Servers = [];
         return Task.CompletedTask;
     });
-});
-
-builder.Services.AddMediator(options =>
-{
-    options.ServiceLifetime = ServiceLifetime.Scoped;
-    options.PipelineBehaviors = [typeof(ValidationBehavior<,>)];
 });
 
 builder.AddBotModuleServices();

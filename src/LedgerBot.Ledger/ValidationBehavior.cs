@@ -2,7 +2,7 @@ using Desfecho;
 using FluentValidation;
 using Mediator;
 
-namespace LedgerBot.Api;
+namespace LedgerBot.Ledger;
 
 public sealed class ValidationBehavior<TMessage, TResponse>(IEnumerable<IValidator<TMessage>> validators) : IPipelineBehavior<TMessage, TResponse> where TMessage : IMessage
 {

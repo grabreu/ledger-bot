@@ -60,7 +60,7 @@ Layout (one project per module, plus a `*.Contracts` project each; only the host
 Rules that hold regardless of layout:
 
 - LLM tools are the router: read tools run directly; a write tool (add entry) runs a Ledger command, and the chat, user and validation (amount, category, date) are fixed in code, never taken from model output. Undo comes from a button. The Bot builds buttons from structured outcomes, not from model text.
-- Commands and queries are validated by a FluentValidation validator in a Mediator pipeline behavior (`Api/ValidationBehavior`).
+- Commands and queries are validated by a FluentValidation validator in a Mediator pipeline behavior (`Ledger/ValidationBehavior`, registered by the Ledger module).
 - Basic model first: `CreateEntryCommand` returns `Result<Guid>` (the entry id, or validation errors), with no confirmation step yet. TODO: decide whether confirmation (missing amount, new category, date not today) is needed; if so it is a deterministic rule, not a model-reported confidence.
 - TODO: delete and edit need user approval (button or approval-required tool), never model output alone; one write per message (guard against duplicate tool calls); description length limit.
 - Telegram has two modes (`Telegram:Mode`): `Webhook` (production, the default in `appsettings.json`) and `Polling` (local development, set in `appsettings.Development.json`, no public URL or tunnel needed). Both share one update handler. Updates are processed on the spot (in the request, or in the polling callback); pending confirmations live in the database. In webhook mode validate `X-Telegram-Bot-Api-Secret-Token` on every request; the endpoint is not mapped in polling mode.

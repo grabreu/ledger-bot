@@ -3,6 +3,7 @@ using FluentValidation;
 using LedgerBot.Ledger.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace LedgerBot.Ledger;
@@ -15,7 +16,15 @@ public static class LedgerModuleExtensions
             "LedgerBot",
             configureDbContextOptions: options => options.UseSqlServer(sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Ledger")));
 
+        builder.Services.TryAddSingleton(TimeProvider.System);
+
         builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        builder.Services.AddMediator(options =>
+        {
+            options.ServiceLifetime = ServiceLifetime.Scoped;
+            options.PipelineBehaviors = [typeof(ValidationBehavior<,>)];
+        });
 
         return builder;
     }
