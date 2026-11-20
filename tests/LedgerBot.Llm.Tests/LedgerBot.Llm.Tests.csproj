@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LedgerBot.Llm\LedgerBot.Llm.csproj" />
-    <ProjectReference Include="..\..\src\LedgerBot.Llm.Contracts\LedgerBot.Llm.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>
