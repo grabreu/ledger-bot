@@ -20,11 +20,10 @@ public static class LedgerModuleExtensions
         return builder;
     }
 
-    public static async Task EnsureLedgerModuleDatabaseAsync(this IHost app)
+    public static async Task MigrateLedgerModuleDatabaseAsync(this IHost app)
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<LedgerDbContext>();
-        await context.Database.EnsureDeletedAsync();
-        await context.Database.EnsureCreatedAsync();
+        await context.Database.MigrateAsync();
     }
 }

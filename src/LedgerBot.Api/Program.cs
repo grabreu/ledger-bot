@@ -1,4 +1,3 @@
-using Desfecho;
 using LedgerBot.Api;
 using LedgerBot.Bot;
 using LedgerBot.Ledger;
@@ -19,7 +18,7 @@ builder.Services.AddOpenApi(options =>
         {
             Title = "Ledger Bot API",
             Version = "v1",
-            Description = "Household expense tracker driven by a Telegram bot and an LLM.",
+            Description = "Expense tracker driven by a Telegram bot and an LLM.",
             Contact = new OpenApiContact
             {
                 Name = "Gabriel Abreu",
@@ -51,6 +50,6 @@ app.Map("/", () => Results.Redirect("/scalar"));
 
 app.MapBotModuleEndpoints();
 
-await app.EnsureLedgerModuleDatabaseAsync();
+await app.MigrateLedgerModuleDatabaseAsync();
 
 await app.RunAsync();
