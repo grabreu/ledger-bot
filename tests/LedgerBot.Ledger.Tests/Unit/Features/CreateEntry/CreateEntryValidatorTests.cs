@@ -61,6 +61,38 @@ public sealed class CreateEntryValidatorTests
         result.ShouldHaveValidationErrorFor(x => x.Amount);
     }
 
+    public static TheoryData<decimal> AmountsThatDoNotFitTheColumn => [10.999m, 10000000000000000m];
+
+    [Theory]
+    [MemberData(nameof(AmountsThatDoNotFitTheColumn))]
+    public void Validate_ShouldHaveError_WhenAmountDoesNotFitTheColumn(decimal amount)
+    {
+        // Arrange
+        var command = _validCommand with { Amount = amount };
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.Amount);
+    }
+
+    public static TheoryData<decimal> AmountsThatFitTheColumn => [0.01m, 45.90m, 45.900m, 9999999999999999.99m];
+
+    [Theory]
+    [MemberData(nameof(AmountsThatFitTheColumn))]
+    public void Validate_ShouldNotHaveError_WhenAmountFitsTheColumn(decimal amount)
+    {
+        // Arrange
+        var command = _validCommand with { Amount = amount };
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(x => x.Amount);
+    }
+
     [Fact]
     public void Validate_ShouldNotHaveError_WhenDescriptionHasMaximumLength()
     {
