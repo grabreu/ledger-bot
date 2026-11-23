@@ -22,7 +22,7 @@ Planned: Azure Container Apps
 
 ## Planned features
 
-- **Natural-language entries**: income and expenses in PT-BR, saved through a validated command, with an Undo button. TODO: confirmation rules.
+- **Natural-language entries**: income and expenses in PT-BR, saved through a validated command, with an Undo button. Entries are saved right away, with no confirmation step.
 - **Questions about your data**: answered through read-only typed tools.
 - **Shared ledger**: one ledger per Telegram chat; add the bot to a group to share it.
 - **Idempotent Telegram updates**: processed at most once per `update_id`.
@@ -43,7 +43,7 @@ Run locally through the AppHost (needs Docker, a Telegram bot token and an Azure
 dotnet run --project src/LedgerBot.AppHost
 ```
 
-The AppHost asks for the `telegram-bot-token`, `llm-endpoint`, `llm-deployment` and `llm-api-key` parameters and starts SQL Server and the API. `llm-deployment` is the deployment name, not the model name.
+The AppHost asks for the `telegram-bot-token`, `llm-endpoint` and `llm-deployment` parameters and starts SQL Server and the API. `llm-endpoint` is the resource endpoint (`https://<resource>.openai.azure.com/`) and `llm-deployment` is the deployment name, not the model name. The API authenticates to Azure OpenAI with `DefaultAzureCredential` (no key): locally it uses your `az login` or IDE sign-in, which needs the Cognitive Services OpenAI User role on the resource.
 
 ## Deployment
 

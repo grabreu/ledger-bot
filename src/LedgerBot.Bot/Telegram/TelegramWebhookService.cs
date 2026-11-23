@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace LedgerBot.Bot.Telegram;
 
@@ -14,6 +15,7 @@ public sealed class TelegramWebhookService(ITelegramBotClient bot, IOptions<Tele
 
         await bot.SetWebhook(
             url,
+            allowedUpdates: [UpdateType.Message, UpdateType.CallbackQuery],
             secretToken: _options.WebhookSecret,
             cancellationToken: cancellationToken);
     }

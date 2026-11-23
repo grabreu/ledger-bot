@@ -5,5 +5,5 @@ namespace LedgerBot.Llm.Tools;
 
 public interface ILlmToolSet
 {
-    IEnumerable<AITool> GetTools(UserContext user);
+    IEnumerable<AITool> GetTools(UserContext user, ICollection<ToolEvent> events);
 }

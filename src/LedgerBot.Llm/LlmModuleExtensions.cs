@@ -1,4 +1,5 @@
-using System.ClientModel;
+using Azure.AI.OpenAI;
+using Azure.Identity;
 using LedgerBot.Llm.Contracts;
 using LedgerBot.Llm.Tools;
 using Microsoft.Extensions.AI;
@@ -6,8 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using OpenAI;
-using OpenAI.Chat;
 
 namespace LedgerBot.Llm;
 
@@ -30,10 +29,10 @@ public static class LlmModuleExtensions
             {
                 var options = sp.GetRequiredService<IOptions<LlmOptions>>().Value;
 
-                return new ChatClient(
-                        options.Deployment,
-                        new ApiKeyCredential(options.ApiKey),
-                        new OpenAIClientOptions { Endpoint = new(options.Endpoint) })
+                return new AzureOpenAIClient(
+                        new Uri(options.Endpoint),
+                        new DefaultAzureCredential())
+                    .GetChatClient(options.Deployment)
                     .AsIChatClient();
             })
             .UseFunctionInvocation(configure: client => client.MaximumIterationsPerRequest = MaximumToolIterations)
