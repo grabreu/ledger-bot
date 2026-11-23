@@ -47,5 +47,6 @@ app.Map("/", () => Results.Redirect("/scalar"));
 app.MapBotModuleEndpoints();
 
 await app.MigrateLedgerModuleDatabaseAsync();
+await app.MigrateBotModuleDatabaseAsync();
 
 await app.RunAsync();

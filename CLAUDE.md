@@ -51,7 +51,7 @@ Layout (one project per module, plus a `*.Contracts` project each; only the host
 - `src/LedgerBot.AppHost`: .NET Aspire host for local development only (no deploy through Aspire).
 - `src/LedgerBot.ServiceDefaults`: OpenTelemetry, health checks, resilience.
 - `src/LedgerBot.Api`: host and composition root only (Program, API docs).
-- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update dispatcher, webhook endpoint with secret validation and webhook registration, polling service). Handlers use `ITelegramBotClient` directly.
+- `src/LedgerBot.Bot`: one folder per use case in `Features/` (handler, plus command or query when needed) and the Telegram plumbing in `Telegram/` (options, update dispatcher, webhook endpoint with secret validation and webhook registration, polling service). It has its own `BotDbContext` in the `Bot` schema (`Domain/`, and `Data/` with the store that claims processed updates). Handlers use `ITelegramBotClient` directly.
 - `src/LedgerBot.Ledger` (Entry)
 - `src/LedgerBot.Llm` (`ILlmService` over an `IChatClient`, tool sets, LlmCall)
 - `src/LedgerBot.Reminders` (Reminder; v1.1)
@@ -93,6 +93,6 @@ Infrastructure smoke tests (for example `/health`) stay as plain xunit tests.
 
 ### Open Questions
 
-- TODO: dedup of Telegram updates by `update_id` (SQL table with id and status, no message content) before production. Until then updates are processed on the spot. The original message text is not stored with entries.
+- Telegram updates are deduplicated by `update_id` in `Bot.ProcessedUpdates` (id, status and time, no message content), at most once, see `docs/adr/0002-deduplicate-telegram-updates-by-update-id.md`. TODO: purge old rows. The original message text is not stored with entries.
 - LLM provider: Azure OpenAI (`gpt-4.1-nano`, Global Standard deployment), pay as you go on the existing Azure subscription; the deployment works and a request to raise the quota to 10,000 TPM is under review. Gemini was dropped (it asked for a BRL 170 prepaid deposit). TODO: confirm the Azure OpenAI data-use terms (training, retention) in the official docs.
-- Deploy starts with `minReplicas=0` (no compute cost within the free grants; `minReplicas=1` would be about USD 10 (roughly BRL 54) per month against a BRL 50 budget). Only safe after the `update_id` dedup, because a cold start may make Telegram resend an update. Keep at 0 unless the cold start gets in the way and the budget changes. TODO: check the "Environment Management Hour" meter in the first month's cost analysis.
+- Deploy starts with `minReplicas=0` (no compute cost within the free grants; `minReplicas=1` would be about USD 10 (roughly BRL 54) per month against a BRL 50 budget). Safe because of the `update_id` dedup: a cold start may make Telegram resend an update. Keep at 0 unless the cold start gets in the way and the budget changes. TODO: check the "Environment Management Hour" meter in the first month's cost analysis.
