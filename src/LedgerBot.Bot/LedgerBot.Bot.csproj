@@ -1,9 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Telegram.Bot" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\LedgerBot.Ledger.Contracts\LedgerBot.Ledger.Contracts.csproj" />
   </ItemGroup>

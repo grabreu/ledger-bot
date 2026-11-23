@@ -33,6 +33,7 @@ public static class LedgerModuleExtensions
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<LedgerDbContext>();
+        await context.Database.EnsureDeletedAsync();
         await context.Database.MigrateAsync();
     }
 }
