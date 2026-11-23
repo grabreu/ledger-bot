@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LedgerBot.Ledger.Contracts\LedgerBot.Ledger.Contracts.csproj" />
     <ProjectReference Include="..\LedgerBot.Llm.Contracts\LedgerBot.Llm.Contracts.csproj" />
   </ItemGroup>
 

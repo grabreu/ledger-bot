@@ -16,7 +16,7 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
 
     private const string ListEntriesDescription = "Lists the most recent entries, newest first, optionally between two dates, for example to answer \"o que eu anotei hoje?\". Use it when the user asks to see entries, not to compute totals. Resolve relative dates with core_get_current_date. When Errors is not empty, the query failed; say what is wrong instead of guessing.";
 
-    public IEnumerable<AITool> GetTools(UserContext user)
+    public IEnumerable<AITool> GetTools(UserContext user, ICollection<ToolEvent> events)
     {
         yield return AIFunctionFactory.Create(
             (
@@ -24,7 +24,7 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
                 [Description("Amount in BRL as a positive number without currency symbol, for example 45.90")] decimal amount,
                 [Description("Date the entry happened as yyyy-MM-dd; today's date when the user does not say otherwise")] DateOnly occurredOn,
                 [Description("Short label of what it was, taken from the user's words, for example \"mercado\"; no amounts or dates")] string description,
-                CancellationToken cancellationToken = default) => CreateEntryAsync(user, kind, amount, occurredOn, description, cancellationToken),
+                CancellationToken cancellationToken = default) => CreateEntryAsync(user, events, kind, amount, occurredOn, description, cancellationToken),
             new AIFunctionFactoryOptions { Name = "ledger_create_entry", Description = CreateEntryDescription });
 
         yield return AIFunctionFactory.Create(
@@ -47,6 +47,7 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
 
     private async Task<CreateEntryToolResult> CreateEntryAsync(
         UserContext user,
+        ICollection<ToolEvent> events,
         EntryKind kind,
         decimal amount,
         DateOnly occurredOn,
@@ -55,6 +56,12 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
     {
         var command = new CreateEntryCommand(user.ChatId, kind, amount, occurredOn, description, user.TelegramUserId);
         var result = await sender.Send(command, cancellationToken);
+
+        if (result.IsSuccess)
+        {
+            events.Add(new EntryCreated(result.Value));
+        }
+
         return result.Match(
             value => new CreateEntryToolResult(Saved: true, value, []),
             errors => new CreateEntryToolResult(Saved: false, null, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));

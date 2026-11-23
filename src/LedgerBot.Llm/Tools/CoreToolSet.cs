@@ -8,7 +8,7 @@ public sealed class CoreToolSet(TimeProvider time) : ILlmToolSet
 {
     private static readonly TimeZoneInfo s_brt = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
 
-    public IEnumerable<AITool> GetTools(UserContext user)
+    public IEnumerable<AITool> GetTools(UserContext user, ICollection<ToolEvent> events)
     {
         yield return AIFunctionFactory.Create(GetCurrentDate, name: "core_get_current_date");
     }
