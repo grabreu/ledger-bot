@@ -22,7 +22,7 @@ Planned: Azure Container Apps
 
 ## Planned features
 
-- **Natural-language entries**: income and expenses in PT-BR, saved through a validated command, with an Undo button. TODO: confirmation rules.
+- **Natural-language entries**: income and expenses in PT-BR, saved through a validated command, with an Undo button. Entries are saved right away, with no confirmation step.
 - **Questions about your data**: answered through read-only typed tools.
 - **Shared ledger**: one ledger per Telegram chat; add the bot to a group to share it.
 - **Idempotent Telegram updates**: processed at most once per `update_id`.
