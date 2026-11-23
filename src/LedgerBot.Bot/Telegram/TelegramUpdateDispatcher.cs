@@ -1,3 +1,5 @@
+using LedgerBot.Bot.Data;
+using LedgerBot.Bot.Domain;
 using LedgerBot.Ledger.Contracts.Commands;
 using LedgerBot.Llm.Contracts;
 using Mediator;
@@ -8,11 +10,31 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace LedgerBot.Bot.Telegram;
 
-public sealed class TelegramUpdateDispatcher(ITelegramBotClient bot, ILlmService llm, ISender sender)
+public sealed class TelegramUpdateDispatcher(ITelegramBotClient bot, ILlmService llm, ISender sender, ProcessedUpdateStore processedUpdates)
 {
     private const string WelcomeText = "Oi! Eu anoto seus gastos e receitas e mostro seus totais. Experimente: \"gastei 45 no mercado\", \"recebi 3000 de salário\" ou \"quanto gastei em outubro?\".";
 
     public async Task DispatchAsync(Update update, CancellationToken cancellationToken)
+    {
+        if (!await processedUpdates.TryClaimAsync(update.Id, cancellationToken))
+        {
+            return;
+        }
+
+        try
+        {
+            await ProcessAsync(update, cancellationToken);
+        }
+        catch
+        {
+            await processedUpdates.MarkAsync(update.Id, ProcessedUpdateStatus.Failed, CancellationToken.None);
+            throw;
+        }
+
+        await processedUpdates.MarkAsync(update.Id, ProcessedUpdateStatus.Completed, cancellationToken);
+    }
+
+    private async Task ProcessAsync(Update update, CancellationToken cancellationToken)
     {
         switch (update)
         {
