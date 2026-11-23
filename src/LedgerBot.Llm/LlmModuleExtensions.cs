@@ -38,7 +38,6 @@ public static class LlmModuleExtensions
             .UseFunctionInvocation(configure: client => client.MaximumIterationsPerRequest = MaximumToolIterations)
             .UseOpenTelemetry(sourceName: TelemetrySourceName, configure: client => client.EnableSensitiveData = false);
 
-        builder.Services.AddScoped<ILlmToolSet, CoreToolSet>();
         builder.Services.AddScoped<ILlmToolSet, LedgerToolSet>();
 
         builder.Services.AddScoped<ILlmService, LlmService>();

@@ -1,3 +1,4 @@
+using LedgerBot.Api;
 using LedgerBot.Bot;
 using LedgerBot.Ledger;
 using LedgerBot.Llm;
@@ -28,6 +29,8 @@ builder.Services.AddOpenApi(options =>
         return Task.CompletedTask;
     });
 });
+
+builder.Services.AddSingleton<TimeProvider, SaoPauloTimeProvider>();
 
 builder.AddBotModuleServices();
 builder.AddLlmModuleServices();

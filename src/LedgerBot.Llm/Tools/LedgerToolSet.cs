@@ -10,11 +10,11 @@ namespace LedgerBot.Llm.Tools;
 
 public sealed class LedgerToolSet(ISender sender, TimeProvider time) : ILlmToolSet
 {
-    private const string CreateEntryDescription = "Records one income or expense the user reported, for example \"gastei 45 no mercado\" or \"recebi 3000 de salário\". Call it exactly once per message, only after the amount is known; if the amount is missing, ask the user instead of calling. Omit the date when it happened today; for other relative dates (\"ontem\") resolve them with core_get_current_date before calling. Never guess the amount. The result has Saved and OccurredOn (the date saved): tell the user it was saved only when Saved is true, otherwise use Errors to say what is missing.";
+    private const string CreateEntryDescription = "Records one income or expense the user reported, for example \"gastei 45 no mercado\" or \"recebi 3000 de salário\". Call it exactly once per message, only after the amount is known; if the amount is missing, ask the user instead of calling. Omit the date when it happened today. Never guess the amount. The result has Saved and the values used (Kind, Amount, Description and the full OccurredOn): tell the user it was saved only when Saved is true, using those values, otherwise use Errors to say what is missing.";
 
-    private const string GetEntriesTotalDescription = "Returns the total income, total expense and number of entries between two dates, for example to answer \"quanto gastei com mercado em outubro?\". Use it for any question about how much was spent or received; never add up entries yourself. Resolve relative dates (\"este mês\", \"semana passada\") with core_get_current_date, and use the current year when the user gives a month without a year. The result has Total (Income, Expense, Count): balance is Income minus Expense. When Errors is not empty, the query failed; say what is wrong instead of guessing.";
+    private const string GetEntriesTotalDescription = "Returns the total income, total expense and number of entries between two dates, for example to answer \"quanto gastei com mercado em outubro?\". Use it for any question about how much was spent or received; never add up entries yourself. The result has Total (Income, Expense, Count), where balance is Income minus Expense, and Filter (the From, To, Kind and DescriptionContains actually used): tell the user the range and filters used. When Errors is not empty, the query failed; say what is wrong instead of guessing.";
 
-    private const string ListEntriesDescription = "Lists the most recent entries, newest first, optionally between two dates, for example to answer \"o que eu anotei hoje?\". Use it when the user asks to see entries, not to compute totals. Resolve relative dates with core_get_current_date. When Errors is not empty, the query failed; say what is wrong instead of guessing.";
+    private const string ListEntriesDescription = "Lists the most recent entries, newest first, optionally between two dates, for example to answer \"o que eu anotei hoje?\". Use it when the user asks to see entries, not to compute totals. The result has Entries and Filter (the From, To and Take actually used): tell the user the range used. When Errors is not empty, the query failed; say what is wrong instead of guessing.";
 
     public IEnumerable<AITool> GetTools(UserContext user, ICollection<ToolEvent> events)
     {
@@ -54,12 +54,13 @@ public sealed class LedgerToolSet(ISender sender, TimeProvider time) : ILlmToolS
         DateOnly? occurredOn,
         CancellationToken cancellationToken)
     {
+        var date = occurredOn ?? time.Today();
+
         if (events.OfType<EntryCreated>().Any())
         {
-            return new CreateEntryToolResult(Saved: false, null, null, ["Only one entry can be saved per message. Ask the user to send the next one in a separate message."]);
+            return new CreateEntryToolResult(Saved: false, null, kind, amount, description, date, ["Only one entry can be saved per message. Ask the user to send the next one in a separate message."]);
         }
 
-        var date = occurredOn ?? LocalTime.Today(time);
         var command = new CreateEntryCommand(user.ChatId, kind, amount, date, description, user.TelegramUserId);
         var result = await sender.Send(command, cancellationToken);
 
@@ -69,8 +70,8 @@ public sealed class LedgerToolSet(ISender sender, TimeProvider time) : ILlmToolS
         }
 
         return result.Match(
-            value => new CreateEntryToolResult(Saved: true, value, date, []),
-            errors => new CreateEntryToolResult(Saved: false, null, null, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
+            value => new CreateEntryToolResult(Saved: true, value, kind, amount, description, date, []),
+            errors => new CreateEntryToolResult(Saved: false, null, kind, amount, description, date, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
     }
 
     private async Task<GetEntriesTotalToolResult> GetEntriesTotalAsync(
@@ -81,10 +82,11 @@ public sealed class LedgerToolSet(ISender sender, TimeProvider time) : ILlmToolS
         string? descriptionContains,
         CancellationToken cancellationToken)
     {
+        var filter = new TotalFilter(from, to, kind, descriptionContains);
         var result = await sender.Send(new GetEntriesTotalQuery(user.ChatId, from, to, kind, descriptionContains), cancellationToken);
         return result.Match(
-            total => new GetEntriesTotalToolResult(total, []),
-            errors => new GetEntriesTotalToolResult(null, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
+            total => new GetEntriesTotalToolResult(total, filter, []),
+            errors => new GetEntriesTotalToolResult(null, filter, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
     }
 
     private async Task<ListEntriesToolResult> ListEntriesAsync(
@@ -94,15 +96,20 @@ public sealed class LedgerToolSet(ISender sender, TimeProvider time) : ILlmToolS
         int take,
         CancellationToken cancellationToken)
     {
+        var filter = new ListFilter(from, to, take);
         var result = await sender.Send(new ListEntriesQuery(user.ChatId, from, to, take), cancellationToken);
         return result.Match(
-            entries => new ListEntriesToolResult(entries, []),
-            errors => new ListEntriesToolResult(null, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
+            entries => new ListEntriesToolResult(entries, filter, []),
+            errors => new ListEntriesToolResult(null, filter, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
     }
 }
 
-public sealed record CreateEntryToolResult(bool Saved, Guid? EntryId, DateOnly? OccurredOn, string[] Errors);
+public sealed record CreateEntryToolResult(bool Saved, Guid? EntryId, EntryKind Kind, decimal Amount, string Description, DateOnly OccurredOn, string[] Errors);
 
-public sealed record GetEntriesTotalToolResult(EntriesTotalDto? Total, string[] Errors);
+public sealed record TotalFilter(DateOnly From, DateOnly To, EntryKind? Kind, string? DescriptionContains);
 
-public sealed record ListEntriesToolResult(IReadOnlyList<EntryDto>? Entries, string[] Errors);
+public sealed record GetEntriesTotalToolResult(EntriesTotalDto? Total, TotalFilter Filter, string[] Errors);
+
+public sealed record ListFilter(DateOnly? From, DateOnly? To, int Take);
+
+public sealed record ListEntriesToolResult(IReadOnlyList<EntryDto>? Entries, ListFilter Filter, string[] Errors);
