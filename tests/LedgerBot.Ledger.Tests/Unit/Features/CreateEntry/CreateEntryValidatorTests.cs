@@ -7,7 +7,7 @@ namespace LedgerBot.Ledger.Tests.Unit.Features.CreateEntry;
 
 public sealed class CreateEntryValidatorTests
 {
-    private readonly CreateEntryValidator _validator = new();
+    private readonly CreateEntryValidator _validator = new(new FixedTimeProvider(new(2026, 11, 20, 1, 0, 0, TimeSpan.Zero)));
     private readonly CreateEntryCommand _validCommand = new(1, EntryKind.Expense, 50m, new(2026, 11, 19), "mercado", 42);
 
     [Fact]
@@ -91,6 +91,32 @@ public sealed class CreateEntryValidatorTests
 
         // Assert
         result.ShouldNotHaveValidationErrorFor(x => x.Amount);
+    }
+
+    [Fact]
+    public void Validate_ShouldNotHaveError_WhenDateIsToday()
+    {
+        // Arrange
+        var command = _validCommand with { OccurredOn = new(2026, 11, 19) };
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldNotHaveValidationErrorFor(x => x.OccurredOn);
+    }
+
+    [Fact]
+    public void Validate_ShouldHaveError_WhenDateIsInTheFuture()
+    {
+        // Arrange
+        var command = _validCommand with { OccurredOn = new(2026, 11, 20) };
+
+        // Act
+        var result = _validator.TestValidate(command);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(x => x.OccurredOn);
     }
 
     [Fact]
