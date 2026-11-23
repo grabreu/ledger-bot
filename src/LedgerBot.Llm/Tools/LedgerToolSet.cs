@@ -8,9 +8,9 @@ using Microsoft.Extensions.AI;
 
 namespace LedgerBot.Llm.Tools;
 
-public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
+public sealed class LedgerToolSet(ISender sender, TimeProvider time) : ILlmToolSet
 {
-    private const string CreateEntryDescription = "Records one income or expense the user reported, for example \"gastei 45 no mercado\" or \"recebi 3000 de salário\". Call it exactly once per message, only after the amount is known; if the amount is missing, ask the user instead of calling. Resolve relative dates (\"hoje\", \"ontem\") with core_get_current_date before calling. Never guess the amount. The result has Saved: tell the user it was saved only when Saved is true, otherwise use Errors to say what is missing.";
+    private const string CreateEntryDescription = "Records one income or expense the user reported, for example \"gastei 45 no mercado\" or \"recebi 3000 de salário\". Call it exactly once per message, only after the amount is known; if the amount is missing, ask the user instead of calling. Omit the date when it happened today; for other relative dates (\"ontem\") resolve them with core_get_current_date before calling. Never guess the amount. The result has Saved and OccurredOn (the date saved): tell the user it was saved only when Saved is true, otherwise use Errors to say what is missing.";
 
     private const string GetEntriesTotalDescription = "Returns the total income, total expense and number of entries between two dates, for example to answer \"quanto gastei com mercado em outubro?\". Use it for any question about how much was spent or received; never add up entries yourself. Resolve relative dates (\"este mês\", \"semana passada\") with core_get_current_date, and use the current year when the user gives a month without a year. The result has Total (Income, Expense, Count): balance is Income minus Expense. When Errors is not empty, the query failed; say what is wrong instead of guessing.";
 
@@ -22,9 +22,9 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
             (
                 [Description("Expense for money spent (gastei, paguei, comprei); Income for money received (recebi, ganhei, salário)")] EntryKind kind,
                 [Description("Amount in BRL as a positive number without currency symbol, for example 45.90")] decimal amount,
-                [Description("Date the entry happened as yyyy-MM-dd; today's date when the user does not say otherwise")] DateOnly occurredOn,
                 [Description("Short label of what it was, taken from the user's words, for example \"mercado\"; no amounts or dates")] string description,
-                CancellationToken cancellationToken = default) => CreateEntryAsync(user, events, kind, amount, occurredOn, description, cancellationToken),
+                [Description("Date the entry happened as yyyy-MM-dd; omit it when it happened today")] DateOnly? occurredOn = null,
+                CancellationToken cancellationToken = default) => CreateEntryAsync(user, events, kind, amount, description, occurredOn, cancellationToken),
             new AIFunctionFactoryOptions { Name = "ledger_create_entry", Description = CreateEntryDescription });
 
         yield return AIFunctionFactory.Create(
@@ -50,11 +50,17 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
         ICollection<ToolEvent> events,
         EntryKind kind,
         decimal amount,
-        DateOnly occurredOn,
         string description,
+        DateOnly? occurredOn,
         CancellationToken cancellationToken)
     {
-        var command = new CreateEntryCommand(user.ChatId, kind, amount, occurredOn, description, user.TelegramUserId);
+        if (events.OfType<EntryCreated>().Any())
+        {
+            return new CreateEntryToolResult(Saved: false, null, null, ["Only one entry can be saved per message. Ask the user to send the next one in a separate message."]);
+        }
+
+        var date = occurredOn ?? LocalTime.Today(time);
+        var command = new CreateEntryCommand(user.ChatId, kind, amount, date, description, user.TelegramUserId);
         var result = await sender.Send(command, cancellationToken);
 
         if (result.IsSuccess)
@@ -63,8 +69,8 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
         }
 
         return result.Match(
-            value => new CreateEntryToolResult(Saved: true, value, []),
-            errors => new CreateEntryToolResult(Saved: false, null, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
+            value => new CreateEntryToolResult(Saved: true, value, date, []),
+            errors => new CreateEntryToolResult(Saved: false, null, null, [.. errors.Select(e => $"{e.Property}: {e.Description}")]));
     }
 
     private async Task<GetEntriesTotalToolResult> GetEntriesTotalAsync(
@@ -95,7 +101,7 @@ public sealed class LedgerToolSet(ISender sender) : ILlmToolSet
     }
 }
 
-public sealed record CreateEntryToolResult(bool Saved, Guid? EntryId, string[] Errors);
+public sealed record CreateEntryToolResult(bool Saved, Guid? EntryId, DateOnly? OccurredOn, string[] Errors);
 
 public sealed record GetEntriesTotalToolResult(EntriesTotalDto? Total, string[] Errors);
 
