@@ -68,7 +68,7 @@ Rules that hold regardless of layout:
 - Entry dates are `DateOnly` in `America/Sao_Paulo`; audit timestamps are UTC.
 - Telegram is the only channel, with no channel abstraction; a user is identified by the Telegram user id. Entries are scoped by Telegram chat id (private chat: personal ledger; group: shared ledger), see `docs/adr/0001-scope-the-ledger-by-telegram-chat.md`.
 - Never log message content; LLM calls record model, prompt version, tokens, estimated cost, latency, and outcome only.
-- Secrets (bot token, webhook secret, LLM key) come from configuration, never from code.
+- Secrets (bot token, webhook secret) come from configuration, never from code. The LLM has no key: the API authenticates to Azure OpenAI with `DefaultAzureCredential` (Microsoft Entra ID).
 
 ### Validation
 

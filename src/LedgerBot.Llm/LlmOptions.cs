@@ -8,5 +8,4 @@ public sealed class LlmOptions
 
     [Required, Url] public string Endpoint { get; set; } = string.Empty;
     [Required] public string Deployment { get; set; } = string.Empty;
-    [Required] public string ApiKey { get; set; } = string.Empty;
 }
