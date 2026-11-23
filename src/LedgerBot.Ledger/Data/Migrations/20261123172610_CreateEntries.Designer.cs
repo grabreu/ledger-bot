@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LedgerBot.Ledger.Data.Migrations;
 
 [DbContext(typeof(LedgerDbContext))]
-[Migration("20261120001705_CreateEntries")]
-partial class _20261120001705_CreateEntries
+[Migration("20261123172610_CreateEntries")]
+partial class _20261123172610_CreateEntries
 {
     /// <inheritdoc />
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,7 +45,8 @@ partial class _20261120001705_CreateEntries
                     .HasColumnType("bigint");
 
                 b.Property<string>("Description")
-                    .HasColumnType("nvarchar(max)");
+                    .HasMaxLength(200)
+                    .HasColumnType("nvarchar(200)");
 
                 b.Property<string>("Kind")
                     .IsRequired()

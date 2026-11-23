@@ -5,21 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Telegram.Bot" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\LedgerBot.Ledger.Contracts\LedgerBot.Ledger.Contracts.csproj" />
-    <ProjectReference Include="..\LedgerBot.Llm.Contracts\LedgerBot.Llm.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

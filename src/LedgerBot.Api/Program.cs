@@ -1,7 +1,5 @@
-using LedgerBot.Api;
 using LedgerBot.Bot;
 using LedgerBot.Ledger;
-using LedgerBot.Llm;
 using LedgerBot.ServiceDefaults;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -30,10 +28,7 @@ builder.Services.AddOpenApi(options =>
     });
 });
 
-builder.Services.AddSingleton<TimeProvider, SaoPauloTimeProvider>();
-
 builder.AddBotModuleServices();
-builder.AddLlmModuleServices();
 builder.AddLedgerModuleServices();
 
 var app = builder.Build();
@@ -44,9 +39,6 @@ app.MapOpenApi();
 app.MapScalarApiReference();
 app.Map("/", () => Results.Redirect("/scalar"));
 
-app.MapBotModuleEndpoints();
-
 await app.MigrateLedgerModuleDatabaseAsync();
-await app.MigrateBotModuleDatabaseAsync();
 
 await app.RunAsync();

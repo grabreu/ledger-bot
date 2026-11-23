@@ -20,6 +20,9 @@ public sealed class EntryConfiguration : IEntityTypeConfiguration<Entry>
         builder.Property(x => x.Amount)
             .HasPrecision(18, 2);
 
+        builder.Property(x => x.Description)
+            .HasMaxLength(200);
+
         builder.HasIndex(x => new { x.ChatId, x.OccurredOn });
     }
 }

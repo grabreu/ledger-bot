@@ -8,7 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\LedgerBot.Bot\LedgerBot.Bot.csproj" />
     <ProjectReference Include="..\LedgerBot.Ledger\LedgerBot.Ledger.csproj" />
-    <ProjectReference Include="..\LedgerBot.Llm\LedgerBot.Llm.csproj" />
     <ProjectReference Include="..\LedgerBot.ServiceDefaults\LedgerBot.ServiceDefaults.csproj" />
   </ItemGroup>
 

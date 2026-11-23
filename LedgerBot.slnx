@@ -3,11 +3,6 @@
     <Project Path="src/LedgerBot.Bot/LedgerBot.Bot.csproj" />
     <Project Path="tests/LedgerBot.Bot.Tests/LedgerBot.Bot.Tests.csproj" />
   </Folder>
-  <Folder Name="/LLM Module/">
-    <Project Path="src/LedgerBot.Llm.Contracts/LedgerBot.Llm.Contracts.csproj" Id="3408ac78-336e-4604-97cd-b6f22c8d7caa" />
-    <Project Path="src/LedgerBot.Llm/LedgerBot.Llm.csproj" Id="8d33f6fd-0399-4c02-ba6e-ccb789392d76" />
-    <Project Path="tests/LedgerBot.Llm.Tests/LedgerBot.Llm.Tests.csproj" Id="1217abae-f2f2-4bf0-b825-efd5f4da2d54" />
-  </Folder>
   <Folder Name="/_Host/">
     <Project Path="src/LedgerBot.Api/LedgerBot.Api.csproj" />
     <Project Path="src/LedgerBot.AppHost/LedgerBot.AppHost.csproj" />

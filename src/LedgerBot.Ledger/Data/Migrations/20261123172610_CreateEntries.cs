@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LedgerBot.Ledger.Data.Migrations;
 
 /// <inheritdoc />
-public partial class _20261120001705_CreateEntries : Migration
+public partial class _20261123172610_CreateEntries : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,7 +24,7 @@ public partial class _20261120001705_CreateEntries : Migration
                 Kind = table.Column<string>(type: "nvarchar(16)", maxLength: 16, nullable: false),
                 Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                 OccurredOn = table.Column<DateOnly>(type: "date", nullable: false),
-                Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                 CreatedBy = table.Column<long>(type: "bigint", nullable: false),
                 CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
             },
@@ -36,7 +37,7 @@ public partial class _20261120001705_CreateEntries : Migration
             name: "IX_Entries_ChatId_OccurredOn",
             schema: "Ledger",
             table: "Entries",
-            columns: ["ChatId", "OccurredOn"]);
+            columns: new[] { "ChatId", "OccurredOn" });
     }
 
     /// <inheritdoc />
